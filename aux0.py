@@ -5,8 +5,8 @@ WIDTH = 1280
 HEIGHT = 720
 
 class Controller(pyglet.window.Window):
-    def __init__(self, title, *args, **kargs):
-        super().__init__(*args, **kargs)
+    def __init__(self, title, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.set_minimum_size(320, 240)
         self.title = title
         self.set_caption(title)
@@ -21,7 +21,7 @@ class Text():
             anchor_x='center',
             anchor_y='center')
 
-    def draw(self):
+    def draw(self):     #Recordar que podemos definir funciones (Métodos) asociadas a una clase.
         self.text.draw()
 
     def set_position(self, x, y):
@@ -49,7 +49,7 @@ class Image():
     def resize(self, width, height):
         pass
 
-class Dinosaur(Image):
+class Dinosaur(Image):  #Podemos entregar una clase como argumento a otra clase
     def __init__(self):
         super().__init__("assets/dinosaur.png", 100, 100)
 
@@ -83,7 +83,7 @@ def on_draw():
     dragText.draw()
 
 @controller.event
-def on_key_press(symbol, modifiers):
+def on_key_press(symbol, modifiers):  #modifier es true si pulsamos alguna tecla modificadora (ej: Shift)
     if symbol == key.SPACE:
         if modifiers & key.MOD_SHIFT:
             dinosaur.y += 100
