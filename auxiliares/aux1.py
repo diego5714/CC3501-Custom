@@ -14,6 +14,7 @@ class Controller(pyglet.window.Window):
         self.set_caption(title)
 
     def update(self, dt):
+        
         pass
 
 if __name__ == "__main__":
