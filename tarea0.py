@@ -17,74 +17,72 @@ class Controller(pyglet.window.Window):
     def update(self, dt):
         pass
 
-if __name__ == "__main__":
-    #Creamos un controlador (ventana)
-    ventana = Controller(ancho = ANCHO, alto = ALTO, titulo = "Tarea #0")
+#Creamos un controlador (ventana)
+ventana = Controller(ancho = ANCHO, alto = ALTO, titulo = "Tarea #0")
 
-    #Procedemos a cargar los shaders y crear el pipeline
-    with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.vert") as f:
-        VertexFuente = f.read()
+#Procedemos a cargar los shaders y crear el pipeline
+with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.vert") as f:
+    VertexFuente = f.read()
 
-    with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.frag") as f:
-        FragmentFuente = f.read()
+with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.frag") as f:
+    FragmentFuente = f.read()
 
-    #Creamos el pipeline:
-    VertexShader = pyglet.graphics.shader.Shader(VertexFuente,'vertex')
-    FragmentShader = pyglet.graphics.shader.Shader(FragmentFuente, 'fragment')
+#Creamos el pipeline:
+VertexShader = pyglet.graphics.shader.Shader(VertexFuente,'vertex')
+FragmentShader = pyglet.graphics.shader.Shader(FragmentFuente, 'fragment')
 
-    pipeline1 = pyglet.graphics.shader.ShaderProgram(VertexShader, FragmentShader)
+pipeline1 = pyglet.graphics.shader.ShaderProgram(VertexShader, FragmentShader)
 
-    #Ahora definimos nuestros vertexes:
+#Ahora definimos nuestros vertexes:
 
-    pac_pos = np.array([
-        0.0,    0.0,        #Pto 0
-        0.707, -0.707,      #Pto 1
-        0.0,   -1.0,        #Pto 2
-        -0.707, -0.707,      #Pto 3
-        -1.0,    0.0,        #Pto 4
-        -0.707,  0.707,      #Pto 5
-        0.0,    1.0,        #Pto 6
-        0.707,  0.707       #Pto 7
+pac_pos = np.array([
+    0.0,    0.0,        #Pto 0
+    0.707, -0.707,      #Pto 1
+    0.0,   -1.0,        #Pto 2
+   -0.707, -0.707,      #Pto 3
+   -1.0,    0.0,        #Pto 4
+   -0.707,  0.707,      #Pto 5
+    0.0,    1.0,        #Pto 6
+    0.707,  0.707       #Pto 7
     ], dtype=np.float32)
 
-    pac_color = np.array([
-            0.016, 0.529, 0.537, #0
-            0.314, 0.239, 0.180, #1
-            0.831, 0.302, 0.153, #2
-            0.682, 0.831, 0.153, #3
-            0.886, 0.655, 0.180, #4
-            0.655, 0.180, 0.886, #5
-            0.180, 0.412, 0.886, #6
-            0.937, 0.922, 0.784  #7
+pac_color = np.array([
+    0.016, 0.529, 0.537, #0
+    0.314, 0.239, 0.180, #1
+    0.831, 0.302, 0.153, #2
+    0.682, 0.831, 0.153, #3
+    0.886, 0.655, 0.180, #4
+    0.655, 0.180, 0.886, #5
+    0.180, 0.412, 0.886, #6
+    0.937, 0.922, 0.784  #7
 
-    ], dtype=np.float32)
+], dtype=np.float32)
 
-    pac_int = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float32)
+pac_int = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.float32)
 
-    pac_index = np.array([
-            0, 1, 2,
-            2, 0, 3, 
-            3, 0, 4,
-            4, 0, 5,
-            5, 0, 6,
-            6, 0, 7
-    ], dtype=np.uint32)
+pac_index = np.array([
+        0, 1, 2,
+        2, 0, 3, 
+        3, 0, 4,
+        4, 0, 5,
+        5, 0, 6,
+        6, 0, 7
+], dtype=np.uint32)
 
-    #Procedemos a transformar nuestros vertexes a una vertex list indexada
+#Procedemos a transformar nuestros vertexes a una vertex list indexada
 
-    pacman = pipeline1.vertex_list_indexed(8, GL.GL_TRIANGLES, pac_index)
+pacman = pipeline1.vertex_list_indexed(8, GL.GL_TRIANGLES, pac_index)
 
-    pacman.position = pac_pos
-    pacman.color = pac_color
-    pacman.intensity = pac_int
+pacman.position = pac_pos
+pacman.color = pac_color
+pacman.intensity = pac_int
 
-    @ventana.event
-    def on_draw():
-        GL.glClearColor(0, 0, 0, 1.0)
-        ventana.clear()
-        pipeline1.use()
-        pacman.draw(GL.GL_TRIANGLES)
-        print("Hola")
+@ventana.event
+def on_draw():  #Procedemos a dibujar mediante triangulos en el pipeline
+    GL.glClearColor(0, 0, 0, 1.0)
+    ventana.clear()
+    pipeline1.use()
+    pacman.draw(GL.GL_TRIANGLES)
 
-    pyglet.clock.schedule_interval(ventana.update, 1/60)
-    pyglet.app.run()
+pyglet.clock.schedule_interval(ventana.update, 1/60)
+pyglet.app.run()    
