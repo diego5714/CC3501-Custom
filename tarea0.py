@@ -73,7 +73,7 @@ pac_index = np.array([
 
 pacman = pipeline1.vertex_list_indexed(8, GL.GL_TRIANGLES, pac_index)
 
-pacman.position = pac_pos
+pacman.position = pac_pos * 0.9
 pacman.color = pac_color
 pacman.intensity = pac_int
 
