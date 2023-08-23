@@ -36,20 +36,28 @@ if __name__ == "__main__":
     
     vert_shader = pyglet.graphics.shader.Shader(vertex_source_code, "vertex")
     frag_shader = pyglet.graphics.shader.Shader(fragment_source_code, "fragment")
+    # Creación del pipeline
     pipeline = pyglet.graphics.shader.ShaderProgram(vert_shader, frag_shader)  #Creamos nuestro pipeline con los shaders especificados.
                                                                                #Es posible crear todos los que queramos.
+    # Posición de los vértices de un triángulo
+    # 3 vértices con 2 coordenadas (x, y)
+    # donde (0, 0) es el centro de la pantalla
     positions = np.array([
         -0.5, -0.5,
          0.5, -0.5,           #Definimos nuestros vértices para una figura (con sus colores e intensidades)
          0.0,  0.5            #Los vectores deben ser del mismo largo (En Nº de vértices, no de elementos necesariamente)
     ], dtype=np.float32)
 
+    # Colores de los vértices del triángulo
+    # 3 vértices con 3 componentes (r, g, b)
     colors = np.array([
         1, 0, 0,
         0, 1, 0,            
         0, 0, 1
     ], dtype=np.float32)  #Le indica al array de numpy que usamos floats
 
+    # Intensidad de los vértices del triángulo
+    # 3 vértices con 1 componente (intensidad)
     intensities = np.array([
         1, 0.5, 1
     ], dtype=np.float32)
@@ -60,17 +68,17 @@ if __name__ == "__main__":
     gpu_triangle.intensity = intensities                     #Especificamos que tipo de primitiva definen nuestros vértices.
                                                              #y el número de ellos. (Definimos su forma)
     quad_positions = np.array([
-        -1, -1,
-        1, -1,
-        1,  1,                         #Repetimos proceso pero para un cuadrado (quad)
-        -1,  1
+        -1, -1, # abajo izquierda
+         1, -1, # abajo derecha
+        -1,  1, # arriba izquierda                     #Repetimos proceso pero para un cuadrado (quad)
+         1,  1  # arriba derecha
     ], dtype=np.float32)
 
     quad_colors = np.array([
         1, 0, 0,
-        0.0, 1.0, 0.0, # verde
-        0.0, 0.0, 1.0, # azul
-        1.0, 1.0, 1.0  # blanco
+        0, 1, 0,
+        0, 0, 1,
+        1, 1, 1
     ], dtype=np.float32)
 
     quad_intensities = np.array([1, 1, 1, 1], dtype=np.float32)
@@ -80,12 +88,15 @@ if __name__ == "__main__":
         2, 3, 0
     ], dtype=np.uint32)
 
+    # Creación de los vértices del cuadrado para uso en gpu
+    # A diferencia del triángulo, aquí se usan los índices definidos anteriormente
     gpu_quad = pipeline.vertex_list_indexed(4, GL.GL_TRIANGLES, quad_indices)  #Lo transformamos a formato GPU (pero con lista indexada)
     gpu_quad.position = quad_positions
     gpu_quad.color = quad_colors
     gpu_quad.intensity = quad_intensities
 
     # draw loop
+    # la función on_draw se ejecuta cada vez que se quiere dibujar algo en pantalla
     @controller.event
     def on_draw():
         GL.glClearColor(0, 0, 0, 1.0)  #Setea la ventana en negro
