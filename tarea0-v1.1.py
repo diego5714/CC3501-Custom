@@ -15,6 +15,7 @@ class Controller(pyglet.window.Window):
         self.set_minimum_size(200,200)
 
     def update(self, dt):
+        
         pass
 
 #Creamos un controlador (ventana)
