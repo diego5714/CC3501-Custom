@@ -15,7 +15,7 @@ class Controller(pyglet.window.Window):
         self.set_minimum_size(200,200)
         self.ancho = ANCHO
         self.alto = ALTO
-        
+
     def update(self, dt):
         pass
 
@@ -106,7 +106,7 @@ triangulo3.intensity = np.array([0.3, 0.7, 0.2], dtype = np.float32)
 
 @ventana.event
 def on_draw():  #Procedemos a dibujar mediante triangulos en el pipeline
-    GL.glClearColor(0.529, 0.522, 0.49, 1.0)
+    GL.glClearColor(0.529, 0.522, 0.49, 1.0) #Gris
     ventana.clear()
     pipeline1.use()
     triangulo1.draw(GL.GL_TRIANGLES)
