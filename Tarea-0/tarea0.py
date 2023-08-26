@@ -21,10 +21,10 @@ class Controller(pyglet.window.Window):
 ventana = Controller(ancho = ANCHO, alto = ALTO, titulo = "Tarea #0")
 
 #Procedemos a cargar los shaders y crear el pipeline
-with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.vert") as f:
+with open(Path(os.path.dirname(__file__)) / "shaders/basic.vert") as f:
     VertexFuente = f.read()
 
-with open(Path(os.path.dirname(__file__)) / "auxiliares/shaders/basic.frag") as f:
+with open(Path(os.path.dirname(__file__)) / "shaders/basic.frag") as f:
     FragmentFuente = f.read()
 
 #Creamos el pipeline:
