@@ -1,0 +1,46 @@
+Auxiliar 4: Grafos de escena
+
+      * Coordenadas globales vs locales
+
+            Globales: Respecto de un origen global / universal
+
+            Locales: Respecto de un origen asociado a otro elemento
+
+                    Las transformaciones locales se concatenan (Las transformaciones de los padres pasan a los hijos)
+
+
+        Como representamos esto? -----> Grafos
+
+                Cada nodo tiene sus transformaciones, y propiedades y apuntan a otro nodo o a un elemento a renderizar
+
+                Lo que se dibujan no son los nodos, son las hojas del arbol de escena
+                Los nodos apuntan a otros nodos, que terminan apuntando a objetos en coordenadas globales.
+
+                Los nodos simplemente nos dicen que transofmraciones y propiedades aplicar finalmente (concatenando)
+
+
+        Instancing: Si requerimos renderizar el mismo objeto muchas veces o con distintas transformaciones, 
+                    simplemente hacemos que distintas ramas del arbol de escena apunten al mismo objeto a renderizar.
+
+
+                    Nos permite renderizar multiples instancias de una misma cosa.
+
+
+
+    Como implementar una escena?
+
+        Primero se define la raiz. (Se crea una clase de grafo vacio, y se define la camara (para las 
+        transformaciones))
+
+        graph.add_node(attach_to): Nos permite crear nodos y concatenarlos al nodo especificado en attach_to
+
+        Eventualmente, los nodos tienen que apuntar a un modelo 3D, para renderizar
+
+        El grafo de escena se encarga de aplicar propiedades y transformaciones a sus nodos
+        los nodos tienen un campo identificador unico para almacenar propiedades, y las conexiones entre nodos son transformaciones.
+
+Revisar codigo de clase y aux para ver detalles de la implementacion.
+
+Para motivarse:
+
+        Estudiar las clases SolarSystem y Person
