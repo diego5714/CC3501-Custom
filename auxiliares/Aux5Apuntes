@@ -1,0 +1,65 @@
+Repaso: Pipeline - Transformaciones - Grafo de escena
+
+Vertices: Estructura de datos definida por el usuario
+        
+          Contiene atributos necesarios para dibujar o realizar operaciones por GPU
+          Atributos que la GPU puede leer.
+
+Rendering Pipeline:
+    Serie de pasos que resultan en la generacion de imagenes
+
+    Los vertices son alimentados a la GPU y se da inicio a la primera etapa del pipeline.
+
+    Shader: Programa que se ejecuta en la GPU: 
+
+        Vertex Shader: Maneja las propiedades de cada vertices
+
+        Fragment Shader: Maneja cada fragmento (Pixel) ya generado previamente.
+
+    Rasterizacion: Asignacion de cada porcion de GPU descrita por vertices a pixeles discretos
+
+        Interpolacion: Al pipeline solo se le entregan 3 vertices del triangulo, la rasterizacion interpola (genera) todos los pixeles contenidos en el.
+
+        La interpolacion se utiliza tambien para el color 
+
+        Hay formulas
+
+
+    Transformaciones:
+        Las transformaciones que se quieren aplicar a cada vertice (Todos los vertices) se aplican mediante el uso de uniforms,
+        los uniforms son variables que se conservan para cada pasada del vertex shader.
+
+        Las matrices de transformacion se pueden concatenar (La concatenacion NO es conmutativa)
+
+        Ojo: Las rotaciones siempre son c/r a (0,0,0) (Origen)
+
+        Recordar que se usan coordenadas Homogeneas (x,y,z,1)(3D) o (x,y,1)(2D)
+
+        El sentido positivo de las rotaciones es en contra de las manecillas del reloj.
+
+        
+        View Matrix: Transforma todo el mundo a la transformacion inversa de la camara (Al espacio de la camara)
+
+                     La camara se transforma en el origen
+
+        
+        Matriz de proyeccion: Transforma todo el volumen que se observa en una camara perspectiva a un cubo de volumen 1 (canonico)
+                              OpenGL trabaja con un cubo canonico para renderizar
+
+                            
+Grafos de escena:
+
+    Son estructuras y relaciones de objetos en una escena.
+    Ayudan a organizar
+
+
+    - Cada hoja del arbol es un objeto basico
+
+    - Cada nodo interno representa un grupo de objetos
+
+    - Cada arco (union de nodos) representa una transformacion
+
+    - La transformacion final de un objeto es la composicion de todas las transformaciones que tome para llegar a el.
+
+
+                    
