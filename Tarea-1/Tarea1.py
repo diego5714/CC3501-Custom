@@ -37,15 +37,18 @@ class Camara():
 
     def obtener_vista(self):
         matrix_vista = tr.lookAt(self.posicion, self.mirando_a, np.array([0, 1, 0], dtype=np.float32))
+        
         return np.reshape(matrix_vista, (16, 1), order="F")
 
     def obtener_proyeccion(self,width,height):
         if self.tipo == "perspectiva":
             matrix_perspectiva = tr.perspective(95, width / height, 0.01, 100)
+        
         elif self.tipo == "ortografica":
             depth = self.posicion - self.mirando_a
             depth = np.linalg.norm(depth)
             matrix_perspectiva = tr.ortho(-(width/height) * depth, (width/height) * depth, -1 * depth, 1 * depth, 0.01, 100)
+        
         return np.reshape(matrix_perspectiva, (16, 1), order="F")
 
 
