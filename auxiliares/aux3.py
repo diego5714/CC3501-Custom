@@ -77,7 +77,7 @@ class Mesh(Model):
         positions = vertex_data[4][1]
 
         count = len(positions) // 3
-        colors = np.full((count * 3, 1), 1.0)
+        colors = np.full((count * 3, 1), 0.0)
         if base_color is None:
             colors = vertex_data[5][1]
         else:
