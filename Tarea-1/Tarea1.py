@@ -4,6 +4,7 @@ import pyglet
 from OpenGL import GL
 import numpy as np
 import trimesh as tm 
+import networkx as nx
 import os
 import sys
 from pathlib import Path
@@ -30,10 +31,10 @@ class Controller(pyglet.window.Window):
     def init(self):
         GL.glClearColor(0.118, 0.122, 0.11, 1.0) #Gris
         GL.glEnable(GL.GL_DEPTH_TEST)
-        GL.glEnable(GL.GL_CULL_FACE)
-        GL.glCullFace(GL.GL_BACK)
+        #GL.glEnable(GL.GL_CULL_FACE)
+        #GL.glCullFace(GL.GL_BACK)
         GL.glFrontFace(GL.GL_CCW)
-        GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
+        #GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
     
     def is_key_pressed(self, key):
         return self.key_handler[key]
@@ -98,11 +99,14 @@ class Modelo():
         self.escala = np.array([1.5,1.5,1.5], dtype=np.float32) #Escala inicial
 
     def inicializar(self, pipeline):
+        self.pipeline = pipeline #Se me habia olvidado esta linea y me costo 30k horas de debugging, simplemente pasaba pipeline
+                                 #sin asignarlo como atributo :(       
+        
         if self.data_indices is not None: #Si existen indices, creamos una vertex list indexada, si no no.
-            self.data_gpu = pipeline.vertex_list_indexed(len(self.data_posicion) // 3, GL.GL_TRIANGLES, self.data_indices)
+            self.data_gpu = self.pipeline.vertex_list_indexed(len(self.data_posicion) // 3, GL.GL_TRIANGLES, self.data_indices)
 
         else:
-            self.data_gpu = pipeline.vertex_list(len(self.data_posicion) // 3, GL.GL_TRIANGLES)
+            self.data_gpu = self.pipeline.vertex_list(len(self.data_posicion) // 3, GL.GL_TRIANGLES)
 
         #Finalmente, le pasamos la informacion al shader:
         self.data_gpu.position = self.data_posicion
@@ -120,7 +124,7 @@ class Modelo():
 
 class Malla(Modelo):
     def __init__(self, path, color_base = None):
-        data_malla = tm.load(path)
+        data_malla = tm.load(path, process = False, force = 'mesh')
         malla_unitaria = tr.uniformScale(2.0 / data_malla.scale)
         malla_centrada = tr.translate(*-data_malla.centroid)
         data_malla.apply_transform(malla_unitaria @ malla_centrada)
@@ -142,6 +146,84 @@ class Malla(Modelo):
 
         super().__init__(posiciones, colores, indices)
 
+class SceneGraph():
+    def __init__(self, camera=None):
+        self.graph = nx.DiGraph(root="root")
+        self.add_node("root")
+        self.camera = camera
+
+    def add_node(self,
+                 name,
+                 attach_to=None,
+                 mesh=None,
+                 color=[1, 1, 1],
+                 transform=tr.identity(),
+                 position=[0, 0, 0],
+                 rotation=[0, 0, 0],
+                 scale=[1, 1, 1],
+                 mode=GL.GL_TRIANGLES):
+        self.graph.add_node(
+            name, 
+            mesh=mesh, 
+            color=color,
+            transform=transform,
+            position=np.array(position, dtype=np.float32),
+            rotation=np.array(rotation, dtype=np.float32),
+            scale=np.array(scale, dtype=np.float32),
+            mode=mode)
+        if attach_to is None:
+            attach_to = "root"
+        
+        self.graph.add_edge(attach_to, name)
+
+    def __getitem__(self, name):
+        if name not in self.graph.nodes:
+            raise KeyError(f"Node {name} not in graph")
+
+        return self.graph.nodes[name]
+    
+    def __setitem__(self, name, value):
+        if name not in self.graph.nodes:
+            raise KeyError(f"Node {name} not in graph")
+
+        self.graph.nodes[name] = value
+    
+    def get_transform(self, node):
+        node = self.graph.nodes[node]
+        transform = node["transform"]
+        translation_matrix = tr.translate(node["position"][0], node["position"][1], node["position"][2])
+        rotation_matrix = tr.rotationX(node["rotation"][0]) @ tr.rotationY(node["rotation"][1]) @ tr.rotationZ(node["rotation"][2])
+        scale_matrix = tr.scale(node["scale"][0], node["scale"][1], node["scale"][2])
+        return transform @ translation_matrix @ rotation_matrix @ scale_matrix
+
+    def dibujar(self):
+        root_key = self.graph.graph["root"]
+        edges = list(nx.edge_dfs(self.graph, source=root_key))
+        transformations = {root_key: self.get_transform(root_key)}
+
+        for src, dst in edges:
+            current_node = self.graph.nodes[dst]
+
+            if not dst in transformations:
+                transformations[dst] = transformations[src] @ self.get_transform(dst)
+
+            if current_node["mesh"] is not None:
+                current_pipeline = current_node["mesh"].pipeline
+                current_pipeline.use()
+
+                if self.camera is not None:
+                    if "u_view" in current_pipeline.uniforms:
+                        current_pipeline["u_view"] = self.camera.obtener_vista()
+
+                    if "u_projection" in current_pipeline.uniforms:
+                        current_pipeline["u_projection"] = self.camera.obtener_proyeccion(ventana.ancho, ventana.alto)
+
+                current_pipeline["u_model"] = np.reshape(transformations[dst], (16, 1), order="F")
+
+                if "u_color" in current_pipeline.uniforms:
+                    current_pipeline["u_color"] = np.array(current_node["color"], dtype=np.float32)
+                current_node["mesh"].dibujar(current_node["mode"])
+
 ventana = Controller(ancho = ANCHO, alto = ALTO, titulo = "Tarea #1")
 
 with open(Path(os.path.dirname(__file__)) / "shaders/transform.vert") as f:
@@ -157,8 +239,31 @@ pipeline1 = pyglet.graphics.shader.ShaderProgram(VertexShader, FragmentShader)
 
 camara = CamaraOrbital(2,"perspectiva")
 
-figura = Malla("Tarea-1/Rueda.stl", [0.77, 0.15, 0.23])
-figura.inicializar(pipeline1)
+garaje = SceneGraph(camara)
+
+cubo = Modelo(shapes.Cube["position"], shapes.Cube["color"], shapes.Cube["indices"])
+cubo.inicializar(pipeline1)
+
+cilindro = Malla("Tarea-1/cylinder.stl")
+cilindro.inicializar(pipeline1)
+
+chasis = Malla("Tarea-1/Chevrolet_Camaro_SS_SR.stl")
+chasis.inicializar(pipeline1)
+
+rueda = Malla("Tarea-1/Rueda.stl", color_base = shapes.BLACK)
+rueda.inicializar(pipeline1)
+
+garaje.add_node("objetos")
+garaje.add_node("garaje", mesh = cubo, scale = [20,20,20], rotation = [-np.pi / 2, 0, 0])
+garaje.add_node("plataforma", attach_to = "objetos")
+garaje.add_node("cilindro", attach_to = "plataforma", mesh = cilindro, rotation = [-np.pi / 2, 0, 0], scale = [1.7, 1.7, 0.063])
+garaje.add_node("vehiculo", attach_to = "plataforma")
+garaje.add_node("chasis", attach_to = "vehiculo", mesh = chasis, rotation = [-np.pi / 2, 0, 0], position = [0, 0.3, 0])
+garaje.add_node("ruedaTD", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, np.pi, 0], position = [-0.3, 0.15, -0.55])
+garaje.add_node("ruedaTI", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, 0, 0], position = [0.3, 0.15, -0.55])
+garaje.add_node("ruedaFD", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, np.pi, 0], position = [-0.3, 0.15, 0.52])
+garaje.add_node("ruedaFI", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, 0, 0], position = [0.3, 0.15, 0.52])
+
 
 axes = Modelo(shapes.Axes["position"], shapes.Axes["color"])
 axes.inicializar(pipeline1)
@@ -194,9 +299,8 @@ def on_draw():
     
     pipeline1["u_model"] = axes.transformaciones()
     axes.dibujar(GL.GL_LINES)
-    
-    pipeline1["u_model"] = figura.transformaciones()
-    figura.dibujar()
+
+    garaje.dibujar()
 
 pyglet.clock.schedule_interval(update, 1/60)
 pyglet.app.run()    

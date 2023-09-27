@@ -343,6 +343,7 @@ if __name__ == "__main__":
 
     sphere = Mesh("assets/sphere.off")
     sphere.init_gpu_data(mesh_pipeline)
+    print(mesh_pipeline)
 
     graph = SceneGraph(camera)
     graph.add_node("shapes")
