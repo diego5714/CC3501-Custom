@@ -33,7 +33,7 @@ class Controller(pyglet.window.Window):
         GL.glEnable(GL.GL_DEPTH_TEST)
         #GL.glEnable(GL.GL_CULL_FACE)
         #GL.glCullFace(GL.GL_BACK)
-        GL.glFrontFace(GL.GL_CCW)
+        #GL.glFrontFace(GL.GL_CCW)
         #GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
     
     def is_key_pressed(self, key):
@@ -69,7 +69,7 @@ class CamaraOrbital(Camara):
         super().__init__(tipo)
         self.distancia = distancia
         self.phi = 0
-        self.theta = np.pi / 2
+        self.theta = np.pi / 2.7
         self.update()
 
     def update(self):
@@ -237,56 +237,78 @@ FragmentShader = pyglet.graphics.shader.Shader(fragment_source_code,'fragment')
 
 pipeline1 = pyglet.graphics.shader.ShaderProgram(VertexShader, FragmentShader)
 
-camara = CamaraOrbital(2,"perspectiva")
+camara = CamaraOrbital(1.2,"perspectiva")
 
 garaje = SceneGraph(camara)
 
 cubo = Modelo(shapes.Cube["position"], shapes.Cube["color"], shapes.Cube["indices"])
 cubo.inicializar(pipeline1)
 
-cilindro = Malla("Tarea-1/cylinder.stl")
+cilindro = Malla("Tarea-1/models/cylinder.stl")
 cilindro.inicializar(pipeline1)
 
-chasis = Malla("Tarea-1/Chevrolet_Camaro_SS_SR.stl")
+chasis = Malla("Tarea-1/models/Chevrolet_Camaro_SS_SIN_VENTANAS.stl")
 chasis.inicializar(pipeline1)
 
-rueda = Malla("Tarea-1/Rueda.stl", color_base = shapes.BLACK)
+ventanas = Malla("Tarea-1/models/Ventanas.stl", color_base = np.array([0, 0.867, 1]))
+ventanas.inicializar(pipeline1)
+
+rueda = Malla("Tarea-1/models/Rueda.stl")
 rueda.inicializar(pipeline1)
 
 garaje.add_node("objetos")
-garaje.add_node("garaje", mesh = cubo, scale = [20,20,20], rotation = [-np.pi / 2, 0, 0])
+garaje.add_node("garaje", mesh = cubo, transform = tr.translate(0, 2, 0) @ tr.uniformScale(4))
 garaje.add_node("plataforma", attach_to = "objetos")
-garaje.add_node("cilindro", attach_to = "plataforma", mesh = cilindro, rotation = [-np.pi / 2, 0, 0], scale = [1.7, 1.7, 0.063])
-garaje.add_node("vehiculo", attach_to = "plataforma")
-garaje.add_node("chasis", attach_to = "vehiculo", mesh = chasis, rotation = [-np.pi / 2, 0, 0], position = [0, 0.3, 0])
-garaje.add_node("ruedaTD", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, np.pi, 0], position = [-0.3, 0.15, -0.55])
-garaje.add_node("ruedaTI", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, 0, 0], position = [0.3, 0.15, -0.55])
-garaje.add_node("ruedaFD", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, np.pi, 0], position = [-0.3, 0.15, 0.52])
-garaje.add_node("ruedaFI", attach_to = "vehiculo", mesh = rueda, scale = [0.2, 0.18, 0.18], rotation = [0, 0, 0], position = [0.3, 0.15, 0.52])
+
+garaje.add_node("cilindro", attach_to = "plataforma", mesh = cilindro, transform = tr.rotationX(-np.pi / 2) @ tr.scale(1.9, 1.9, 0.063))
+garaje.add_node("vehiculo", attach_to = "plataforma", transform = tr.translate(0, 0.29, 0) @ tr.rotationX(-np.pi / 2))
+
+garaje.add_node("chasis", attach_to = "vehiculo", mesh = chasis)
+garaje.add_node("ventanas", attach_to = "vehiculo", mesh = ventanas, transform = tr.translate(0, 0.113, 0.145) @ tr.scale(0.519, 0.519, 0.519))
+garaje.add_node("ruedas", attach_to = "vehiculo", transform = tr.translate(0, 0, -0.13) @ tr.uniformScale(0.19))
+
+garaje.add_node("R_Derechas", attach_to = "ruedas", transform = tr.translate(-1.5, 0, 0) @ tr.rotationZ(np.pi))
+garaje.add_node("R_Izquierdas", attach_to = "ruedas", transform = tr.translate(1.5, 0, 0))
+
+garaje.add_node("ruedaTD", attach_to = "R_Derechas", mesh = rueda, transform = tr.translate(0, -2.82, 0))
+garaje.add_node("ruedaTI", attach_to = "R_Izquierdas", mesh = rueda, transform = tr.translate(0, -2.82, 0))
+garaje.add_node("ruedaFD", attach_to = "R_Derechas", mesh = rueda, transform = tr.translate(0, 2.82, 0))
+garaje.add_node("ruedaFI", attach_to = "R_Izquierdas", mesh = rueda, transform = tr.translate(0, 2.82, 0))
 
 
-axes = Modelo(shapes.Axes["position"], shapes.Axes["color"])
-axes.inicializar(pipeline1)
+#axes = Modelo(shapes.Axes["position"], shapes.Axes["color"])
+#axes.inicializar(pipeline1)
 
-print("Controles Cámara:\n\tWASD: Rotar\n\t Q/E: Acercar/Alejar\n\t1/2: Cambiar tipo")
+#print("Controles Cámara:\n\tWASD: Rotar\n\t Q/E: Acercar/Alejar\n\t1/2: Cambiar tipo")
+#def update(dt):
+#    if ventana.is_key_pressed(pyglet.window.key.A):
+#        camara.phi -= dt
+#    if ventana.is_key_pressed(pyglet.window.key.D):
+#        camara.phi += dt
+#    if ventana.is_key_pressed(pyglet.window.key.W):
+#        camara.theta -= dt
+#    if ventana.is_key_pressed(pyglet.window.key.S):
+#        camara.theta += dt
+#    if ventana.is_key_pressed(pyglet.window.key.Q):
+#        camara.distancia += dt
+#    if ventana.is_key_pressed(pyglet.window.key.E):
+#        camara.distancia -= dt
+#    if ventana.is_key_pressed(pyglet.window.key._1):
+#        camara.tipo = "perspectiva"
+#    if ventana.is_key_pressed(pyglet.window.key._2):
+#        camara.tipo = "ortografica"
+
+#    camara.update()
+
 def update(dt):
-    if ventana.is_key_pressed(pyglet.window.key.A):
-        camara.phi -= dt
-    if ventana.is_key_pressed(pyglet.window.key.D):
-        camara.phi += dt
-    if ventana.is_key_pressed(pyglet.window.key.W):
-        camara.theta -= dt
-    if ventana.is_key_pressed(pyglet.window.key.S):
-        camara.theta += dt
-    if ventana.is_key_pressed(pyglet.window.key.Q):
-        camara.distancia += dt
-    if ventana.is_key_pressed(pyglet.window.key.E):
-        camara.distancia -= dt
-    if ventana.is_key_pressed(pyglet.window.key._1):
-        camara.tipo = "perspectiva"
-    if ventana.is_key_pressed(pyglet.window.key._2):
-        camara.tipo = "ortografica"
+    coseno = abs(np.cos(camara.phi))
 
+    if coseno < 0.6:
+        coseno = 0.6
+
+    camara.distancia = coseno + 0.5
+    
+    camara.phi -= dt / 2
     camara.update()
 
 @ventana.event
@@ -297,8 +319,8 @@ def on_draw():
     pipeline1["u_view"] = camara.obtener_vista()
     pipeline1["u_projection"] = camara.obtener_proyeccion(ventana.ancho,ventana.alto)
     
-    pipeline1["u_model"] = axes.transformaciones()
-    axes.dibujar(GL.GL_LINES)
+    #pipeline1["u_model"] = axes.transformaciones()
+    #axes.dibujar(GL.GL_LINES)
 
     garaje.dibujar()
 
