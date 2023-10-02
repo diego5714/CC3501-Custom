@@ -427,8 +427,8 @@ if __name__ == "__main__":
 
         # Aquí se dibujan los grafos, descomentar según se necesite
         #graph.draw()
-        solar_system.draw()
-        #person.draw()
+        #solar_system.draw()
+        person.draw()
 
     pyglet.clock.schedule_interval(update, 1/60)
     pyglet.app.run()
