@@ -1,0 +1,85 @@
+Auxiliar 6: Texturas y iluminacion
+
+Las texturas se suelen almacenar en atlas
+
+Que es una textura?
+    Una textura no es una imagen, es un objeto que se almacena en la GPU, al igual que los vertices
+    La textura contiene tipicamente una imagen 2D, pero no es una imagen en si misma.
+
+    Para una misma textura, puedo inclusive definir una coleccion de imagenes 2D
+
+Para que se usan?
+    Uso comun: Texture mapping: Mapear los colores de una imagen en una superficie.
+    
+    Otro uso: Render Targets: Las imagenes renderizzadas por un pipeline pueden ser dibujadas en una textura en vez de
+                              directamente en una ventana, luego esta textura puede ser manipulada por la GPU.
+
+    Otro uso: Cubemaps para reflexiones
+
+    Otro uso: Efectos y renderizado volumetrico (Texturas 3D) -> Divides un modelo 3D en capas.
+
+    Otro uso: Shadow mapping, post procesado, etc...
+
+
+Texture mapping: Como asociamos una imagen en una textura a una malla?
+    1 - Se carga una imagen a la GPU
+    2 - Se crea una textura en GPU, y se le asocia la imagen cargada
+    3- A los vertices de los objetos a texturizar, se le asignan coordenadas UV
+    4 - La textura se utiliza en el objeto (Luego de seleccionarla (Binding)) mediante un Sampler (Uniform especial)
+
+    Un sampler es
+
+    Coordenadas UV: (o ST (en OpenGL se usan ambas nomenclaturas))
+        Coordenadas en el espacio de la textura
+
+        Lo que hace el texture mapping es asociar coordenadas de textura a coordenadas de modelo
+
+        En openGL las coordenadas UV se definen al reves, con uno de los ejes hacia abajo, por lo que es conveniente dar
+        vuelta la textura para trabajar con ella (Para que las coordenadas queden 1 a 1)
+
+        0 es el inicio de la textura, 1 el final (En cada eje)
+    
+
+    Texture wrapping: Que pasa si me salgo del rango [0,1]?
+        Depende de como configuremos OpenGL:
+            - GL_REPEAT
+            - GL_MIRRORED_REPEAT
+            - GL_CLAMP_TO_EDGE: Se repite la ultima fila / columna
+            - GL_CLAMP_TO_BORDER
+
+        Estas propiedades se pueden configurar independientemente para cada eje (u o v)(s o t)
+
+    Texture filtering:
+        La definicion en pixeles de la imagen no suele coincidir con la definicion el pixeles del objeto
+        entonces debemos interpolar pixeles para cubrir la superficie:
+
+        - GL_NEAREST
+        - GL_LINEAR
+
+        Esto se puede especificar para situaciones en las que debemos agrandar la imagen, o para
+        situaciones en las que debemos achicarla (magnificar o minimizar)
+
+Iluminacion: 
+
+Con rasterizacion es imposible hacer reflexiones y iluminacion de forma nativa, se usan trucos.
+
+Iluminacion local:
+    Como interactua la luz de forma directa con la superficie de un modelo en la escena.
+    (Sin considerar interacciones con otros modelos)
+
+Iluminacion Global: (Avanzado)
+    Como interactua la luz indirectamente, tomando en cuenta los rebotes de luz
+    en todas las superficies de la escena.
+
+Modelo de iluminacion Local: Modelo de Phong:
+    Ambiente + difusa + especular = combinada (phong)
+
+    Iluminacion difusa simple:
+        Quiero que dependiendo de como incida la luz, cambie el color
+        (La direccion de incidencia es constante para todas las caras)
+
+        Color final = max(Prod_punto(Normal, direccion_luz), 0.0)
+
+        (El prod. punto puede ser negativo, entonces tomamos maximo entre color y 0)
+
+
