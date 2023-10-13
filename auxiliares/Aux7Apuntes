@@ -1,0 +1,67 @@
+Auxiliar 7: Materiales y luces
+
+Material: define el comportamiento de una superficie de una malla, en respuesta al entorno
+          El color final esta dado por la composicion de distintas componentes de la interaccion de la luz en ese material.
+
+Modelo Phong:
+        El color final de un objeto esta determinado por tres componentes de iluminacion: Ambiental, difuso y especular
+
+        Cada componente del material interactua con su respectiva componente de la luz.
+
+        El color ambiental es un hack para simular iluminacion global con rasterizacion convencional
+        (Simplemente asigna un color uniforme a todo el objeto)
+
+        Todo este modelo se desarrolla en el fragment shader, hay que diferenciarlo de las texturas (Se pueden mezclar ambos)
+
+Componente difuso del material:
+        Representa la luz que se dispersa sobre la superficie (Luz que se absorbe y luz que se refleja uniformemente en todas direcciones)
+
+Componente especular: 
+        Representa la reflexion directa de la luz en objetos "brillosos"
+
+        definir un material especular requiere un parametro extra al color: representa que tan concentrado es el reflejo de luz
+
+Luego, para definir un material se necesita:
+        - Color reflejado del material en todas las componentes
+        - brillo: "shininess"
+
+Definir el material no basta, el objeto se veria negro,
+es necesario definir una fuente de luz con sus propios colores
+
+El uso de texturas es independiente al material
+
+-----------------------------------------------------------------
+
+Luces:
+    Fuente de iluminacion que interactua con un material para otorgar su color final
+
+    La luz en el modelo phong esta definido tambien por 3 componentes: Ambiente, difuso y especular (Aparte de los del material)
+
+    Luz direccional:
+        El foco esta posicionado en el infinito
+        los rayos son paralelos entre si
+
+        Variables: Luz: (
+                    Color: Ambiente, difuso, especular
+                    Direccion
+                    )
+
+    Luz puntual:
+        Foco con posicion definida
+        Rayos salen del foco en todas direcciones
+
+        Variables: Luz: (
+            Color(Ambiente, difuso, especular)
+            Posicion
+            Atenuacion  --> define el radio de impacto de la luz en la escena: 3 parametros: Constante, lineal y cuadratica
+        )                                                                           (Hay tablas de valores dada la distancia deseada)
+                                                                                    (Pero se puede probar valores)
+
+    Luz Focal/dirigida (SpotLight):
+        Foco con posicion definida
+        Rayos salen del foco en una direccion definida (Un foco)
+        
+        Variables: Luz: (
+            Color: (Ambiente, difus, especular)
+            ...
+        )
