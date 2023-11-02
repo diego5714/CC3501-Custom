@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_1",
                     attach_to = "Plataforma_1",
-                    transform = tr.translate(0, 2, 0) @ tr.rotationY(np.pi)
+                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(np.pi)
                     )
     
     Garaje.add_node("Chasis_1",
