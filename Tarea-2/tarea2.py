@@ -374,10 +374,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Chasis,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.016, 0.631, 0.133],
-                                specular = [0.439, 0.812, 0.051],
-                                shininess = 128
+                                ambient = [0.24725, 0.2245, 0.0645],
+                                diffuse = [0.34615, 0.3143, 0.0903],
+                                specular = [0.797357, 0.723991, 0.208006],
+                                shininess = 83.2
                     )
                     )
 
