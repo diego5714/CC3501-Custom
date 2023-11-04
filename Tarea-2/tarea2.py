@@ -36,7 +36,7 @@ class Ventana(pyglet.window.Window):
         self.program_state = {  "camera": None,
                                 "seleccion": 0, 
                                 "Key_Cool_Down": 0,
-                                "transicion": False, 
+                                "transicion": False,
                                 "Offset_Inicial": None,
                                 "Offset_Final": np.array([0, 0, 15], dtype=np.float32),
                                 "Offset_Actual": np.array([0, 0, 15], dtype=np.float32),
@@ -54,12 +54,11 @@ class Ventana(pyglet.window.Window):
         return self.key_handler[key]
 
 class cameraOrbital(Camera):
-    def __init__(self, distancia, tipo = "perspective", ancho = ANCHO, alto = ALTO, center_offset = np.array([0, 0, 0], dtype=np.float32), angle_offset = 0):
+    def __init__(self, distancia, tipo = "perspective", ancho = ANCHO, alto = ALTO, center_offset = np.array([0, 0, 0], dtype=np.float32)):
         super().__init__(tipo, ancho, alto)
         self.distancia = distancia
         self.center_offset = center_offset
-        self.angle_offset = angle_offset
-        self.phi = 0 + angle_offset
+        self.phi = 0
         self.theta = np.pi / 2.7
         self.update()
 
@@ -69,9 +68,9 @@ class cameraOrbital(Camera):
         elif self.theta < 0:
             self.theta = 0.0001
 
-        self.position[0] = self.distancia * np.sin(self.theta) * np.sin(self.phi + self.angle_offset) + self.center_offset[0]
+        self.position[0] = self.distancia * np.sin(self.theta) * np.sin(self.phi) + self.center_offset[0]
         self.position[1] = self.distancia * np.cos(self.theta) + self.center_offset[1]
-        self.position[2] = self.distancia * np.sin(self.theta) * np.cos(self.phi + self.angle_offset) + self.center_offset[2]
+        self.position[2] = self.distancia * np.sin(self.theta) * np.cos(self.phi) + self.center_offset[2]
 
 def mesh_from_file_custom(path, escalar = True):
     mesh_data = tm.load(path)
@@ -117,11 +116,6 @@ if __name__ == "__main__":
         get_path("auxiliares/shaders/color_mesh_lit.vert"),
         get_path("auxiliares/shaders/color_mesh_lit.frag"))
 
-    '''
-    Ventana.program_state["camera"] = FreeCamera([2.5, 2.5, 2.5], "perspective")
-    Ventana.program_state["camera"].yaw = -3* np.pi/ 4
-    Ventana.program_state["camera"].pitch = -np.pi / 4
-    '''
 
     Ventana.program_state["camera"] = cameraOrbital(8, ancho = Ventana.ancho, alto = Ventana.alto)
     Ventana.program_state["camera"].theta = np.pi / 2.7
@@ -164,9 +158,9 @@ if __name__ == "__main__":
                     pipeline = Color_Mesh_Lit_Pipeline,
                     rotation = np.array([0, 0, np.pi/2]),
                     light = DirectionalLight(
-                            ambient = np.array([0.3, 0.2, 0.2]),
-                            diffuse = np.array([0.3, 0.2, 0.2]),
-                            specular = np.array([0.3, 0.2, 0.2])
+                            ambient = np.array([0.1, 0.1, 0.1]),
+                            diffuse = np.array([0.1, 0.1, 0.1]),
+                            specular = np.array([0.1, 0.1, 0.1])
                             ),
                     )
     
@@ -258,7 +252,7 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_1",
                     attach_to = "Plataforma_1",
-                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(-np.pi/2)
+                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(np.pi/2)
                     )
     
     Garaje.add_node("Chasis_1",
@@ -720,76 +714,59 @@ if __name__ == "__main__":
         
 
         return offset_actual
-    
-    def Elevacion_Camara():
-        pass
+
     
     def update(dt):
         camera = Ventana.program_state["camera"]
         Ventana.program_state["Key_Cool_Down"] += dt
 
         if Ventana.program_state["Key_Cool_Down"] >= 10.0:
-            Ventana.program_state["Key_Cool_Down"] = 0.01 #Para que el numero no se vaya a la cresta xD
+            Ventana.program_state["Key_Cool_Down"] = 0.01 #Para que el numero no se vaya a la cresta el valor xD
 
         if not Ventana.program_state["transicion"]:
-            coseno = abs(np.cos(camera.phi))  #Por mejorar
-
-            if coseno < 0.75:
-                coseno = 0.75
-
-            camera.distancia = 7.75 * coseno
-    
-            camera.phi += dt / 2
-
-            if camera.phi >= np.pi * 2:
-                camera.phi = 0
+            pass
 
         if Ventana.is_key_pressed(pyglet.window.key.SPACE) and Ventana.program_state["Key_Cool_Down"] >= 0.5 and not Ventana.program_state["transicion"]:
         
-            if Ventana.program_state["seleccion"] == 0:
+            Ventana.program_state["seleccion"] += 1
+            
+            if Ventana.program_state["seleccion"] > 2:
+                Ventana.program_state["seleccion"] = 0
+
+            if Ventana.program_state["seleccion"] == 1:
                 Ventana.program_state["Offset_Inicial"] = np.array([0, 0, 15])
                 Ventana.program_state["Offset_Final"] = np.array([-12.99, 0, -7.5])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 2 / 3
                 
-                camera.angle_offset = -2 * np.pi / 3
         
-            elif Ventana.program_state["seleccion"] == 1:
+            elif Ventana.program_state["seleccion"] == 2:
                 Ventana.program_state["Offset_Inicial"] = np.array([-12.99, 0, -7.5])
                 Ventana.program_state["Offset_Final"] = np.array([12.99, 0, -7.5])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 4 / 3
-                
-                camera.angle_offset = -4 * np.pi / 3
+            
 
             else:
                 Ventana.program_state["Offset_Inicial"] = np.array([12.99, 0, -7.5])
                 Ventana.program_state["Offset_Final"] = np.array([0, 0, 15])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 2
-                
-                camera.angle_offset = 0
-
-            Ventana.program_state["seleccion"] += 1
-
-            if Ventana.program_state["seleccion"] > 2:
-                Ventana.program_state["seleccion"] = 0
-
-            #camera.phi = 3 * np.pi / 4
 
             Ventana.program_state["Key_Cool_Down"] = 0
 
-        #################################################################################
+        ####################################################################################################################################################
 
         if np.sqrt(np.square(Ventana.program_state["Offset_Final"][0] - Ventana.program_state["Offset_Actual"][0]) + np.square(Ventana.program_state["Offset_Final"][2] - Ventana.program_state["Offset_Actual"][2])) > 0.1:
         #Ejecutamos si la distancia entre el offset actual y el final es mayor a 0.1 (Es decir, debemos desplazarnos)
+            
+            Ventana.program_state["transicion"] = True
 
             #Logica para mover suavemente el centro de la camara
-            Ventana.program_state["transicion"] = True
             Ventana.program_state["Offset_Actual"] = Transicion_suave(dt, Ventana.program_state["Offset_Inicial"], 
-                                                                        Ventana.program_state["Offset_Final"], 
-                                                                        Ventana.program_state["Offset_Actual"],
-                                                                    )
+                                                                            Ventana.program_state["Offset_Final"], 
+                                                                            Ventana.program_state["Offset_Actual"],
+                                                                        )
             
             camera.center_offset = Ventana.program_state["Offset_Actual"]
 
@@ -798,9 +775,6 @@ if __name__ == "__main__":
 
             if delta_parametro >= 0.01:
                 Ventana.program_state["Parametro_Vista_Actual"] += dt / 4
-
-            else:
-                camera.focus = Circunferencia(Ventana.program_state["Parametro_Vista_Final"] * np.pi)
 
             camera.focus = Circunferencia(Ventana.program_state["Parametro_Vista_Actual"] * np.pi)
 
@@ -812,7 +786,6 @@ if __name__ == "__main__":
             if Ventana.program_state["seleccion"] == 0:
                 Ventana.program_state["Parametro_Vista_Actual"] = 0
 
-        print(Ventana.program_state["Parametro_Vista_Actual"])
         camera.update()
 
     @Ventana.event
