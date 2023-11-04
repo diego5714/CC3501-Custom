@@ -145,6 +145,14 @@ if __name__ == "__main__":
 
     #Dimensiones del chasis (approx): 4 x 3 x 10
     #Dimensiones del cilindro base: Radio: 1, altura: 2
+
+    #Materiales:
+
+    Material_Cromo = [[0.25, 0.25, 0.25], [0.4, 0.4, 0.4], [0.774597, 0.774597, 0.774597], 76.8]
+    Material_Goma_Negra = [[0.02, 0.02, 0.02], [0.01, 0.01, 0.01], [0.4, 0.4, 0.4], 10]
+    Material_Oro_Pulido = [[0.24725, 0.2245, 0.0645], [0.34615, 0.3143, 0.0903], [0.797357, 0.723991, 0.208006], 83.2]
+    Material_Rubi = [[0.1745, 0.01175, 0.01175], [0.61424, 0.04136, 0.04136], [0.727811, 0.626959, 0.626959], 76.8]
+    Material_Esmeralda = [[0.0215, 0.1745, 0.0215], [0.07568, 0.61424, 0.07568], [0.633, 0.727811, 0.633], 76.8]
     
 ###################################################################################################################################################################
 #Grafo de escena
@@ -181,11 +189,51 @@ if __name__ == "__main__":
                     transform = tr.translate(0, 0, 15)
                     ) 
 
-    Garaje.add_node("Marcador_1",
+    
+    Garaje.add_node("Luz_Vehiculo_1", 
                     attach_to = "Plataforma_1",
+                    pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([5, 5, 2.5]),
+                    light = PointLight(
+                            diffuse = [1, 1, 1], 
+                            specular = [1, 1, 1], 
+                            ambient = [1, 1, 1],
+                            constant = 1,
+                            linear = 0.14,
+                            quadratic = 0.07,
+                    )
+                    )
+
+    Garaje.add_node("Luz_Vehiculo_1_2", 
+                    attach_to = "Plataforma_1",
+                    pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([-5, 5, -2.5]),
+                    light = PointLight(
+                            diffuse = [1, 1, 1], 
+                            specular = [1, 1, 1], 
+                            ambient = [1, 1, 1],
+                            constant = 1,
+                            linear = 0.12,
+                            quadratic = 0.05,
+                    )
+                    )
+
+    Garaje.add_node("Marcador_A1",
+                    attach_to = "Luz_Vehiculo_1",
                     #mesh = Mesh_marcador,
                     pipeline = Color_Mesh_Lit_Pipeline,
-                    position = np.array([0, 5, 2]),
+                    material = Material(
+                                ambient = np.array([1, 1, 1]),
+                                diffuse = np.array([1, 1, 1]),
+                                specular = np.array([1, 1, 1]),
+                                shininess = 5
+                                ),
+                    )
+
+    Garaje.add_node("Marcador_B1",
+                    attach_to = "Luz_Vehiculo_1_2",
+                    #mesh = Mesh_marcador,
+                    pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
                                 ambient = np.array([1, 1, 1]),
                                 diffuse = np.array([1, 1, 1]),
@@ -195,29 +243,15 @@ if __name__ == "__main__":
                     )
 
     
-    Garaje.add_node("Luz_Vehiculo_1", 
-                    attach_to = "Marcador_1",
-                    pipeline = Color_Mesh_Lit_Pipeline, 
-                    light = PointLight(
-                            diffuse = [1, 1, 1], 
-                            specular = [1, 1, 1], 
-                            ambient = [1, 1, 1],
-                            constant = 1,
-                            linear = 0.09,
-                            quadratic = 0.032,
-                    )
-                    )
-    
-    
     Garaje.add_node("Cilindro_1", 
                     attach_to = "Plataforma_1",
                     mesh = Mesh_Cilindro, 
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.639, 0.624, 0.584],
-                                specular = [0.3, 0.3, 0.3],
-                                shininess = 5
+                                ambient = Material_Cromo[0],
+                                diffuse = Material_Cromo[1],
+                                specular = Material_Cromo[2],
+                                shininess = Material_Cromo[3]
                     ),
                     transform = tr.scale(6, 0.15, 6)
                     )
@@ -232,10 +266,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Chasis,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.859, 0.075, 0.075],
-                                specular = [0.859, 0.541, 0.541],
-                                shininess = 128
+                                ambient = Material_Rubi[0],
+                                diffuse = Material_Rubi[1],
+                                specular = Material_Rubi[2],
+                                shininess = Material_Rubi[3]
                     )
                     )
 
@@ -297,10 +331,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Neumaticos,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.2, 0.216, 0.22],
-                                specular = [0.2, 0.216, 0.22],
-                                shininess = 2
+                                ambient = [0.02, 0.02, 0.02],
+                                diffuse = [0.01, 0.01, 0.01],  #Goma negra
+                                specular = [0.4, 0.4, 0.4],
+                                shininess = 10
                     )
                     )
     
@@ -323,31 +357,56 @@ if __name__ == "__main__":
                     transform = tr.translate(-12.99, 0, -7.5) @ tr.rotationY(- np.pi / 6)
                     ) 
 
-    Garaje.add_node("Marcador_2",
-                    attach_to = "Plataforma_2",
-                    #mesh = Mesh_marcador,
-                    pipeline = Color_Mesh_Lit_Pipeline,
-                    position = [0, 5, 2],
-                    material = Material(
-                                ambient = [1, 1, 1],
-                                diffuse = [1, 1, 1],
-                                specular = [1, 1, 1],
-                                shininess = 5
-                                )
-                    )
-
-    
     Garaje.add_node("Luz_Vehiculo_2", 
-                    attach_to = "Marcador_2",
+                    attach_to = "Plataforma_2",
                     pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([5, 5, 2.5]),
                     light = PointLight(
                             diffuse = [1, 1, 1], 
                             specular = [1, 1, 1], 
                             ambient = [1, 1, 1],
                             constant = 1,
-                            linear = 0.09,
-                            quadratic = 0.032,
+                            linear = 0.14,
+                            quadratic = 0.07,
                     )
+                    )
+
+    Garaje.add_node("Luz_Vehiculo_2_2", 
+                    attach_to = "Plataforma_2",
+                    pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([-5, 5, -2.5]),
+                    light = PointLight(
+                            diffuse = [1, 1, 1], 
+                            specular = [1, 1, 1], 
+                            ambient = [1, 1, 1],
+                            constant = 1,
+                            linear = 0.12,
+                            quadratic = 0.05,
+                    )
+                    )
+
+    Garaje.add_node("Marcador_A2",
+                    attach_to = "Luz_Vehiculo_2",
+                    #mesh = Mesh_marcador,
+                    pipeline = Color_Mesh_Lit_Pipeline,
+                    material = Material(
+                                ambient = np.array([1, 1, 1]),
+                                diffuse = np.array([1, 1, 1]),
+                                specular = np.array([1, 1, 1]),
+                                shininess = 5
+                                ),
+                    )
+
+    Garaje.add_node("Marcador_B2",
+                    attach_to = "Luz_Vehiculo_2_2",
+                    #mesh = Mesh_marcador,
+                    pipeline = Color_Mesh_Lit_Pipeline,
+                    material = Material(
+                                ambient = np.array([1, 1, 1]),
+                                diffuse = np.array([1, 1, 1]),
+                                specular = np.array([1, 1, 1]),
+                                shininess = 5
+                                ),
                     )
     
     
@@ -356,10 +415,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Cilindro, 
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.639, 0.624, 0.584],
-                                specular = [0.3, 0.3, 0.3],
-                                shininess = 5
+                                ambient = Material_Cromo[0],
+                                diffuse = Material_Cromo[1],
+                                specular = Material_Cromo[2],
+                                shininess = Material_Cromo[3]
                     ),
                     transform = tr.scale(6, 0.15, 6)
                     )
@@ -374,10 +433,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Chasis,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.24725, 0.2245, 0.0645],
-                                diffuse = [0.34615, 0.3143, 0.0903],
-                                specular = [0.797357, 0.723991, 0.208006],
-                                shininess = 83.2
+                                ambient = Material_Oro_Pulido[0],
+                                diffuse = Material_Oro_Pulido[1],
+                                specular = Material_Oro_Pulido[2],
+                                shininess = Material_Oro_Pulido[3]
                     )
                     )
 
@@ -439,10 +498,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Neumaticos,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.2, 0.216, 0.22],
-                                specular = [0.2, 0.216, 0.22],
-                                shininess = 2
+                                ambient = Material_Goma_Negra[0],
+                                diffuse = Material_Goma_Negra[1],
+                                specular = Material_Goma_Negra[2],
+                                shininess = Material_Goma_Negra[3]
                     )
                     )
     
@@ -465,31 +524,56 @@ if __name__ == "__main__":
                     transform = tr.translate(12.99, 0, -7.5) @ tr.rotationY(-5 * np.pi / 6)
                     ) 
 
-    Garaje.add_node("Marcador_3",
-                    attach_to = "Plataforma_3",
-                    #mesh = Mesh_marcador,
-                    pipeline = Color_Mesh_Lit_Pipeline,
-                    position = [0, 5, 2],
-                    material = Material(
-                                ambient = [1, 1, 1],
-                                diffuse = [1, 1, 1],
-                                specular = [1, 1, 1],
-                                shininess = 5
-                                )
-                    )
-
-    
     Garaje.add_node("Luz_Vehiculo_3", 
-                    attach_to = "Marcador_3",
+                    attach_to = "Plataforma_3",
                     pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([5, 5, 2.5]),
                     light = PointLight(
                             diffuse = [1, 1, 1], 
                             specular = [1, 1, 1], 
                             ambient = [1, 1, 1],
                             constant = 1,
-                            linear = 0.09,
-                            quadratic = 0.032,
+                            linear = 0.14,
+                            quadratic = 0.07,
                     )
+                    )
+
+    Garaje.add_node("Luz_Vehiculo_3_2", 
+                    attach_to = "Plataforma_3",
+                    pipeline = Color_Mesh_Lit_Pipeline, 
+                    position = np.array([-5, 5, -2.5]),
+                    light = PointLight(
+                            diffuse = [1, 1, 1], 
+                            specular = [1, 1, 1], 
+                            ambient = [1, 1, 1],
+                            constant = 1,
+                            linear = 0.12,
+                            quadratic = 0.05,
+                    )
+                    )
+
+    Garaje.add_node("Marcador_A3",
+                    attach_to = "Luz_Vehiculo_3",
+                    #mesh = Mesh_marcador,
+                    pipeline = Color_Mesh_Lit_Pipeline,
+                    material = Material(
+                                ambient = np.array([1, 1, 1]),
+                                diffuse = np.array([1, 1, 1]),
+                                specular = np.array([1, 1, 1]),
+                                shininess = 5
+                                ),
+                    )
+
+    Garaje.add_node("Marcador_B3",
+                    attach_to = "Luz_Vehiculo_3_2",
+                    #mesh = Mesh_marcador,
+                    pipeline = Color_Mesh_Lit_Pipeline,
+                    material = Material(
+                                ambient = np.array([1, 1, 1]),
+                                diffuse = np.array([1, 1, 1]),
+                                specular = np.array([1, 1, 1]),
+                                shininess = 5
+                                ),
                     )
     
     
@@ -498,10 +582,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Cilindro, 
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.639, 0.624, 0.584],
-                                specular = [0.3, 0.3, 0.3],
-                                shininess = 5
+                                ambient = Material_Cromo[0],
+                                diffuse = Material_Cromo[1],
+                                specular = Material_Cromo[2],
+                                shininess = Material_Cromo[3]
                     ),
                     transform = tr.scale(6, 0.15, 6)
                     )
@@ -516,10 +600,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Chasis,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.239, 0.063, 0.949],
-                                specular = [0.592, 0.525, 0.859],
-                                shininess = 128
+                                ambient = Material_Esmeralda[0],
+                                diffuse = Material_Esmeralda[1],
+                                specular = Material_Esmeralda[2],
+                                shininess = Material_Esmeralda[3]
                     )
                     )
 
@@ -581,10 +665,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Neumaticos,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.2, 0.216, 0.22],
-                                specular = [0.2, 0.216, 0.22],
-                                shininess = 2
+                                ambient = Material_Goma_Negra[0],
+                                diffuse = Material_Goma_Negra[1],
+                                specular = Material_Goma_Negra[2],
+                                shininess = Material_Goma_Negra[3]
                     )
                     )
     
@@ -691,7 +775,6 @@ if __name__ == "__main__":
             if Ventana.program_state["seleccion"] > 2:
                 Ventana.program_state["seleccion"] = 0
 
-            camera.focus = Ventana.program_state["Offset_Final"]
             #camera.phi = 3 * np.pi / 4
 
             Ventana.program_state["Key_Cool_Down"] = 0
