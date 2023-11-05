@@ -42,8 +42,7 @@ class Ventana(pyglet.window.Window):
                                 "Offset_Actual": np.array([0, 0, 15], dtype=np.float32),
                                 "Parametro_Vista_Final": 0,
                                 "Parametro_Vista_Actual": 0,
-                                "Angulo_Final": np.pi,
-                                "Rotacion_Auto": [0, - np.pi / 2, 0]
+                                "Angulo_Final": np.pi
                             }
                                  #valores por defecto de la posicion del centro de la camera, y a donde miramos.
         self.init()
