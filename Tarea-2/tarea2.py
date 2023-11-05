@@ -41,7 +41,9 @@ class Ventana(pyglet.window.Window):
                                 "Offset_Final": np.array([0, 0, 15], dtype=np.float32),
                                 "Offset_Actual": np.array([0, 0, 15], dtype=np.float32),
                                 "Parametro_Vista_Final": 0,
-                                "Parametro_Vista_Actual": 0
+                                "Parametro_Vista_Actual": 0,
+                                "Angulo_Final": np.pi,
+                                "Rotacion_Auto": [0, - np.pi / 2, 0]
                             }
                                  #valores por defecto de la posicion del centro de la camera, y a donde miramos.
         self.init()
@@ -53,7 +55,7 @@ class Ventana(pyglet.window.Window):
     def is_key_pressed(self, key):
         return self.key_handler[key]
 
-class cameraOrbital(Camera):
+class Camara_Orbital(Camera):
     def __init__(self, distancia, tipo = "perspective", ancho = ANCHO, alto = ALTO, center_offset = np.array([0, 0, 0], dtype=np.float32)):
         super().__init__(tipo, ancho, alto)
         self.distancia = distancia
@@ -68,9 +70,9 @@ class cameraOrbital(Camera):
         elif self.theta < 0:
             self.theta = 0.0001
 
-        self.position[0] = self.distancia * np.sin(self.theta) * np.sin(self.phi) + self.center_offset[0]
+        self.position[0] = self.distancia * np.sin(self.theta) * np.sin(-1 * self.phi + np.pi) + self.center_offset[0]
         self.position[1] = self.distancia * np.cos(self.theta) + self.center_offset[1]
-        self.position[2] = self.distancia * np.sin(self.theta) * np.cos(self.phi) + self.center_offset[2]
+        self.position[2] = self.distancia * np.sin(self.theta) * np.cos(-1 * self.phi + np.pi) + self.center_offset[2]
 
 def mesh_from_file_custom(path, escalar = True):
     mesh_data = tm.load(path)
@@ -117,9 +119,10 @@ if __name__ == "__main__":
         get_path("auxiliares/shaders/color_mesh_lit.frag"))
 
 
-    Ventana.program_state["camera"] = cameraOrbital(8, ancho = Ventana.ancho, alto = Ventana.alto)
+    #Creamos y configuramos la camara con sus parametros iniciales
+    Ventana.program_state["camera"] = Camara_Orbital(7, ancho = Ventana.ancho, alto = Ventana.alto)
     Ventana.program_state["camera"].theta = np.pi / 2.7
-    Ventana.program_state["camera"].phi = - np.pi
+    Ventana.program_state["camera"].phi = 0
     
     Ventana.program_state["camera"].center_offset = Ventana.program_state["Offset_Actual"]
     Ventana.program_state["camera"].focus = np.array([0, 0, 15])
@@ -255,7 +258,8 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_1",
                     attach_to = "Plataforma_1",
-                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(-np.pi/2)
+                    rotation = [0, - np.pi / 2, 0],
+                    transform = tr.translate(0, 1.66, 0)
                     )
     
     Garaje.add_node("Chasis_1",
@@ -351,7 +355,7 @@ if __name__ == "__main__":
     #Segundo Vehiculo:
 
     Garaje.add_node("Plataforma_2",
-                    transform = tr.translate(-12.99, 0, -7.5) @ tr.rotationY(- np.pi / 6)
+                    transform = tr.translate(-12.99, 0, -7.5)
                     ) 
 
     Garaje.add_node("Luz_Vehiculo_2", 
@@ -422,7 +426,8 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_2",
                     attach_to = "Plataforma_2",
-                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(np.pi)
+                    rotation = [0,  5 * np.pi / 6, 0],
+                    transform = tr.translate(0, 1.66, 0)
                     )
     
     Garaje.add_node("Chasis_2",
@@ -518,7 +523,8 @@ if __name__ == "__main__":
     #Tercer Vehiculo:
 
     Garaje.add_node("Plataforma_3",
-                    transform = tr.translate(12.99, 0, -7.5) @ tr.rotationY(-5 * np.pi / 6)
+                    transform = tr.translate(12.99, 0, -7.5) 
+                    #@ tr.rotationY(-5 * np.pi / 6)
                     ) 
 
     Garaje.add_node("Luz_Vehiculo_3", 
@@ -589,7 +595,8 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_3",
                     attach_to = "Plataforma_3",
-                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(np.pi)
+                    rotation = [0, np.pi / 6, 0],
+                    transform = tr.translate(0, 1.66, 0)
                     )
     
     Garaje.add_node("Chasis_3",
@@ -717,25 +724,68 @@ if __name__ == "__main__":
         
 
         return offset_actual
-
-    def Rot_Suave(dt, camera, angulo_objetivo):
-        nuevo_angulo = 0
-        
-        if camera.phi > angulo_objetivo + 0.01:
-            nuevo_angulo = camera.phi - dt
-        
-        print(nuevo_angulo)
-        return nuevo_angulo
     
     def update(dt):
         camera = Ventana.program_state["camera"]
+        Auto_1 = Garaje.__getitem__("Vehiculo_1")
+        Auto_2 = Garaje.__getitem__("Vehiculo_2")
+        Auto_3 = Garaje.__getitem__("Vehiculo_3")
+
         Ventana.program_state["Key_Cool_Down"] += dt
 
         if Ventana.program_state["Key_Cool_Down"] >= 10.0:
             Ventana.program_state["Key_Cool_Down"] = 0.01 #Para que el numero no se vaya a la cresta el valor xD
 
         if not Ventana.program_state["transicion"]:
-            pass
+            if Ventana.program_state["seleccion"] == 0:
+                
+                Auto_1["rotation"][1] += dt / 2
+                Auto_2["rotation"][1] = 5 * np.pi / 6
+                Auto_3["rotation"][1] = np.pi / 6 
+
+                coseno = abs(2.3 * np.cos(Auto_1["rotation"][1] - np.pi / 2)) + 5
+
+                if coseno <= 5.6:
+                    coseno = 5.6
+
+                if coseno >= 7.2:
+                    coseno = 7.2
+                
+                camera.distancia = coseno
+
+            elif Ventana.program_state["seleccion"] == 1:
+                Auto_1["rotation"][1] = - np.pi / 2
+                Auto_2["rotation"][1] += dt / 2
+                Auto_3["rotation"][1] = np.pi / 6
+
+                
+                coseno = abs(2.3 * np.cos(Auto_2["rotation"][1] + np.pi / 6)) + 5
+
+                if coseno <= 5.6:
+                    coseno = 5.6
+
+                if coseno >= 7.2:
+                    coseno = 7.2
+                
+                camera.distancia = coseno
+                
+
+            else:
+                Auto_1["rotation"][1] = - np.pi / 2
+                Auto_2["rotation"][1] = - np.pi / 6
+                Auto_3["rotation"][1] += dt / 2
+
+                
+                coseno = abs(2.3 * np.cos(Auto_3["rotation"][1] + 5 * np.pi / 6)) + 5
+
+                if coseno <= 5.6:
+                    coseno = 5.6
+
+                if coseno >= 7.2:
+                    coseno = 7.2
+                
+                camera.distancia = coseno
+                
 
         if Ventana.is_key_pressed(pyglet.window.key.SPACE) and Ventana.program_state["Key_Cool_Down"] >= 0.5 and not Ventana.program_state["transicion"]:
         
@@ -749,6 +799,7 @@ if __name__ == "__main__":
                 Ventana.program_state["Offset_Final"] = np.array([-12.99, 0, -7.5])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 2 / 3
+                Ventana.program_state["Angulo_Final"] = 2 * np.pi / 3
                 
         
             elif Ventana.program_state["seleccion"] == 2:
@@ -756,6 +807,7 @@ if __name__ == "__main__":
                 Ventana.program_state["Offset_Final"] = np.array([12.99, 0, -7.5])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 4 / 3
+                Ventana.program_state["Angulo_Final"] =  4 * np.pi / 3
             
 
             else:
@@ -763,26 +815,23 @@ if __name__ == "__main__":
                 Ventana.program_state["Offset_Final"] = np.array([0, 0, 15])
 
                 Ventana.program_state["Parametro_Vista_Final"] = 2
+                Ventana.program_state["Angulo_Final"] =  2 * np.pi 
 
             Ventana.program_state["Key_Cool_Down"] = 0
 
         ####################################################################################################################################################
 
-        if np.sqrt(np.square(Ventana.program_state["Offset_Final"][0] - Ventana.program_state["Offset_Actual"][0]) + np.square(Ventana.program_state["Offset_Final"][2] - Ventana.program_state["Offset_Actual"][2])) > 0.1:
+        distancia_offsets = np.sqrt(np.square(Ventana.program_state["Offset_Final"][0] - Ventana.program_state["Offset_Actual"][0]) + np.square(Ventana.program_state["Offset_Final"][2] - Ventana.program_state["Offset_Actual"][2]))
+        
+        if distancia_offsets > 0.1:
         #Ejecutamos si la distancia entre el offset actual y el final es mayor a 0.1 (Es decir, debemos desplazarnos)
             
             Ventana.program_state["transicion"] = True
-
-            if Ventana.program_state["seleccion"] == 1:
-                #camera.phi = np.pi / 3
-                camera.phi = Rot_Suave(dt, camera, np.pi / 3)
-
-            elif Ventana.program_state["seleccion"] == 2:
-                #camera.phi = - np.pi / 3
-                camera.phi = Rot_Suave(dt, camera, - np.pi / 3)
-
+            
+            if camera.distancia < 7.2:
+                camera.distancia += dt
             else:
-                camera.phi =  np.pi
+                camera.distancia = 7.2
 
             #Logica para mover suavemente el centro de la camara
             Ventana.program_state["Offset_Actual"] = Mov_Suave(dt, Ventana.program_state["Offset_Inicial"], 
@@ -792,23 +841,33 @@ if __name__ == "__main__":
             
             camera.center_offset = Ventana.program_state["Offset_Actual"]
 
-            #Logica para voltear la camara de manera suave
+            #Logica para trasladar la camara de manera suave
             delta_parametro = Ventana.program_state["Parametro_Vista_Final"] - Ventana.program_state["Parametro_Vista_Actual"]
 
             if delta_parametro >= 0.01:
                 Ventana.program_state["Parametro_Vista_Actual"] += dt / 4
 
             camera.focus = Circunferencia(Ventana.program_state["Parametro_Vista_Actual"] * np.pi)
+            #camera.phi = Ventana.program_state["Parametro_Vista_Actual"]
+
+            #Logica para ajustar el angulo de rotacion de la camara (phi):
+            delta_angulo = Ventana.program_state["Angulo_Final"] - camera.phi
+
+            if delta_angulo > 0.01:
+                camera.phi -= - 0.728 * dt  #No cuadra al 100% pero es good enough, para hacerlo bien habria que interpolar
 
 
         else:
             Ventana.program_state["transicion"] = False
             camera.center_offset = Ventana.program_state["Offset_Final"]
+            camera.phi = Ventana.program_state["Angulo_Final"]
+
 
             if Ventana.program_state["seleccion"] == 0:
                 Ventana.program_state["Parametro_Vista_Actual"] = 0
-
-        #print(camera.phi)
+                camera.phi = 0
+        
+        print(camera.distancia)
         camera.update()
 
     @Ventana.event
