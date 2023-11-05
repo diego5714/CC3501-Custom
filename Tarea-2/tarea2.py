@@ -119,7 +119,9 @@ if __name__ == "__main__":
 
     Ventana.program_state["camera"] = cameraOrbital(8, ancho = Ventana.ancho, alto = Ventana.alto)
     Ventana.program_state["camera"].theta = np.pi / 2.7
-    Ventana.program_state["camera"].center_offset = np.array([0, 0, 15])
+    Ventana.program_state["camera"].phi = - np.pi
+    
+    Ventana.program_state["camera"].center_offset = Ventana.program_state["Offset_Actual"]
     Ventana.program_state["camera"].focus = np.array([0, 0, 15])
     
 
@@ -147,7 +149,8 @@ if __name__ == "__main__":
     Material_Oro_Pulido = [[0.24725, 0.2245, 0.0645], [0.34615, 0.3143, 0.0903], [0.797357, 0.723991, 0.208006], 83.2]
     Material_Rubi = [[0.1745, 0.01175, 0.01175], [0.61424, 0.04136, 0.04136], [0.727811, 0.626959, 0.626959], 76.8]
     Material_Esmeralda = [[0.0215, 0.1745, 0.0215], [0.07568, 0.61424, 0.07568], [0.633, 0.727811, 0.633], 76.8]
-    
+    Material_Ventanas = [[0.1, 0.1, 0.1], [0.016, 0.8, 0.941], [0.116, 0.9, 1], 64]
+    Material_Plata = []
 ###################################################################################################################################################################
 #Grafo de escena
 
@@ -252,7 +255,7 @@ if __name__ == "__main__":
 
     Garaje.add_node("Vehiculo_1",
                     attach_to = "Plataforma_1",
-                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(np.pi/2)
+                    transform = tr.translate(0, 1.66, 0) @ tr.rotationY(-np.pi/2)
                     )
     
     Garaje.add_node("Chasis_1",
@@ -272,10 +275,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Ventanas,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.016, 0.8, 0.941],
-                                specular = [0.116, 0.9, 1],
-                                shininess = 32
+                                ambient = Material_Ventanas[0],
+                                diffuse = Material_Ventanas[1],
+                                specular = Material_Ventanas[2],
+                                shininess = Material_Ventanas[3]
                     )
                     )
 
@@ -439,10 +442,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Ventanas,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.016, 0.8, 0.941],
-                                specular = [0.116, 0.9, 1],
-                                shininess = 32
+                                ambient = Material_Ventanas[0],
+                                diffuse = Material_Ventanas[1],
+                                specular = Material_Ventanas[2],
+                                shininess = Material_Ventanas[3]
                     )
                     )
 
@@ -606,10 +609,10 @@ if __name__ == "__main__":
                     mesh = Mesh_Ventanas,
                     pipeline = Color_Mesh_Lit_Pipeline,
                     material = Material(
-                                ambient = [0.1, 0.1, 0.1],
-                                diffuse = [0.016, 0.8, 0.941],
-                                specular = [0.116, 0.9, 1],
-                                shininess = 32
+                                ambient = Material_Ventanas[0],
+                                diffuse = Material_Ventanas[1],
+                                specular = Material_Ventanas[2],
+                                shininess = Material_Ventanas[3]
                     )
                     )
 
@@ -688,7 +691,7 @@ if __name__ == "__main__":
         return np.array([x,y,z])
         
     
-    def Transicion_suave(dt, offset_inicial, offset_final, offset_actual):
+    def Mov_Suave(dt, offset_inicial, offset_final, offset_actual):
         signo_offset_x = np.sign(offset_final[0] - offset_actual[0])
         signo_offset_z = np.sign(offset_final[2] - offset_actual[2])
     
@@ -715,6 +718,14 @@ if __name__ == "__main__":
 
         return offset_actual
 
+    def Rot_Suave(dt, camera, angulo_objetivo):
+        nuevo_angulo = 0
+        
+        if camera.phi > angulo_objetivo + 0.01:
+            nuevo_angulo = camera.phi - dt
+        
+        print(nuevo_angulo)
+        return nuevo_angulo
     
     def update(dt):
         camera = Ventana.program_state["camera"]
@@ -762,8 +773,19 @@ if __name__ == "__main__":
             
             Ventana.program_state["transicion"] = True
 
+            if Ventana.program_state["seleccion"] == 1:
+                #camera.phi = np.pi / 3
+                camera.phi = Rot_Suave(dt, camera, np.pi / 3)
+
+            elif Ventana.program_state["seleccion"] == 2:
+                #camera.phi = - np.pi / 3
+                camera.phi = Rot_Suave(dt, camera, - np.pi / 3)
+
+            else:
+                camera.phi =  np.pi
+
             #Logica para mover suavemente el centro de la camara
-            Ventana.program_state["Offset_Actual"] = Transicion_suave(dt, Ventana.program_state["Offset_Inicial"], 
+            Ventana.program_state["Offset_Actual"] = Mov_Suave(dt, Ventana.program_state["Offset_Inicial"], 
                                                                             Ventana.program_state["Offset_Final"], 
                                                                             Ventana.program_state["Offset_Actual"],
                                                                         )
@@ -786,6 +808,7 @@ if __name__ == "__main__":
             if Ventana.program_state["seleccion"] == 0:
                 Ventana.program_state["Parametro_Vista_Actual"] = 0
 
+        #print(camera.phi)
         camera.update()
 
     @Ventana.event
