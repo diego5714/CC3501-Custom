@@ -836,7 +836,7 @@ if __name__ == "__main__":
 
         distancia_offsets = np.sqrt(np.square(Ventana.program_state["Offset_Final"][0] - Ventana.program_state["Offset_Actual"][0]) + np.square(Ventana.program_state["Offset_Final"][2] - Ventana.program_state["Offset_Actual"][2]))
         
-        if distancia_offsets > 0.1:
+        if distancia_offsets > 0.2:
         #Ejecutamos si la distancia entre el offset actual y el final es mayor a 0.1 (Es decir, debemos desplazarnos)
             
             Ventana.program_state["transicion"] = True
@@ -857,7 +857,7 @@ if __name__ == "__main__":
             #Logica para trasladar la camara de manera suave
             delta_parametro = Ventana.program_state["Parametro_Vista_Final"] - Ventana.program_state["Parametro_Vista_Actual"]
 
-            if delta_parametro >= 0.01:
+            if delta_parametro >= 0.02:
                 Ventana.program_state["Parametro_Vista_Actual"] += dt / 4
 
             camera.focus = Circunferencia(Ventana.program_state["Parametro_Vista_Actual"] * np.pi)
@@ -866,7 +866,7 @@ if __name__ == "__main__":
             #Logica para ajustar el angulo de rotacion de la camara (phi):
             delta_angulo = Ventana.program_state["Angulo_Final"] - camera.phi
 
-            if delta_angulo > 0.01:
+            if delta_angulo > 0.02:
                 camera.phi -= - 0.728 * dt  #No cuadra al 100% pero es good enough, para hacerlo bien habria que interpolar
 
 
