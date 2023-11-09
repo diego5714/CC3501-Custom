@@ -1,0 +1,65 @@
+Auxiliar #8: Colisiones
+
+Que es una colision?
+    Existe una interseccion entre 2 geometrias?
+        Que es una interseccion?
+            Entre quienes?
+
+Para que quiero saber si 2 objetos estan colisionando?: Multitud de usos
+    1 - Simulacion Fisica
+    2 - Interactividad, ej: Click de mouse sobre region de la imagen
+    3 - Ray Tracing: Colisiones entre rayos y mallas
+
+Para saber si 2 objetos colisionan debemos definir que es una interseccion, y como interaccionan sus geometrias:
+    
+    1 - Circulo con un punto:
+        
+        El punto P intersecta con el circulo C, si la distancia entre su centro y P es menor a su radio.
+            dist(P,c) < r
+
+        Dato: Sacar raiz cuadrada es una operacion relativamente costosa, se suele usar distancias al cuadrado.
+
+    2 - Circulo con circulo:
+        
+        En lugar de preguntar por solo un punto en el espacio, comparo ambos radios
+
+        Hay interseccion si la distancia entre sus centros es menor a la suma de sus radios
+            dist(c2, c1) < r1 + r2
+
+    Estos 2 casos se puede extender a 3D con esferas, las formulas son las mismas. (Si los 2 objetos son 3D)
+
+    
+    3 - Axis-Aligned Bounding Box (AABB) (Caja alineada al eje)
+
+        Es la caja de menor volumen que contiene al objeto que se le quiere calcular la colision, 
+        Sus lados estan siempre alineados con los ejes.
+
+        Esta definida por 2 vectores: Esquina Minima y esquina Maxima
+
+        3.1 - AABB vs Punto:
+
+            El punto P intersecta con el AABB,
+            
+            si para cada eje se tiene que Min <= P <= Max (En todos los ejes, para cada coordenada, simultaneamente)
+
+        3.2 - AABB vs AABB
+
+            Parecido a AABB vs punto, pero ahora se hace respecto a min y max del otro AABB (2 puntos)
+
+        3.3 - AABB vs Esfera:
+
+            Se calcula la distancia entre el centro de la esfera y el punto mas cercano de la caja al centro de la esfera,
+            y se revisa si esta distancia es menor al radio.
+
+    4 - Otras geometrias:
+         
+         - Capsulas (Tipo de geometria Proxy, permite simplificar consultas para geometrias complejas)
+         - Oriented Bounding Box (OBB) (No orientados en un eje)
+         - Envoltura Convexa (Area entre varios puntos)
+         - Triangulos en malla
+
+Las consultas de colision son costosas:
+    Para consultas mas detalladas se usan estructuras de datos jerarquizadas (Ej: Octree, BVH)
+        Permiten crear arboles de colisiones (Para un mismo Objeto), que permiten subdividir la colision segun se necesite.
+
+
