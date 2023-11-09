@@ -63,3 +63,10 @@ Las consultas de colision son costosas:
         Permiten crear arboles de colisiones (Para un mismo Objeto), que permiten subdividir la colision segun se necesite.
 
 
+###########################################################################################################################
+
+Las consultas geometricas solo retornan datos. Queda a criterio de la aplicacion que hacer con ellos.
+
+    Ej: Seleccion de objetos con el mouse (Tomando en cuenta la martiz de proyeccion, y el near - plane)
+
+
