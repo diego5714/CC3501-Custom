@@ -858,7 +858,7 @@ if __name__ == "__main__":
             #Logica para trasladar la camara de manera suave
             delta_parametro = Ventana.program_state["Parametro_Vista_Final"] - Ventana.program_state["Parametro_Vista_Actual"]
 
-            if delta_parametro >= 0.01:
+            if delta_parametro >= dt / 10000:
                 Ventana.program_state["Parametro_Vista_Actual"] += dt / 3.5
 
             camera.focus = Circunferencia(Ventana.program_state["Parametro_Vista_Actual"] * np.pi)
