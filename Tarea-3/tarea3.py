@@ -51,8 +51,8 @@ class Ventana(pyglet.window.Window):
                                 "physics_world" : None,
                                 "bodies": {},
                                 #Parametros para el integrador de fuerzas
-                                "vel_iters": 6,
-                                "pos_iters": 2
+                                "vel_iters": 10,
+                                "pos_iters": 10
                             }
                                  #valores por defecto de la posicion del centro de la camera, y a donde miramos.
         self.init()
@@ -145,7 +145,6 @@ if __name__ == "__main__":
         
         if ventana.program_state["scene"] == 0:
             garaje.draw()
-            axis_scene.draw()
         
         else:
             pista.draw()

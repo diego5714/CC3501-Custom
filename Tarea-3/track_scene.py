@@ -125,7 +125,7 @@ def crear_pista(ventana):
     pista.add_node("pista",
                    mesh = Cubo,
                    position = np.array([0, -0.5, 0]),
-                   transform = tr.scale(150, 1, 150),
+                   transform = tr.scale(200, 1, 200),
                    pipeline = Textured_Mesh_Lit_Pipeline,
                    texture = textura_pista,
                    material = Material(
@@ -206,24 +206,52 @@ def crear_pista(ventana):
 
     #Cuerpos dinamicos
     vehicle_body = world.CreateDynamicBody(position=(0, 0))
-    vehicle_body.CreatePolygonFixture(box=(4, 10), density=1, friction=1)
+    vehicle_body.CreatePolygonFixture(box=(4, 10), density=1, friction=100)
+    vehicle_body.linearDamping = 1
+    vehicle_body.angularDamping = 1
+    
 
     ventana.program_state["physics_world"] = world
-    ventana.program_state["bodies"]["vehicle"] = vehicle_body
+    ventana.program_state["bodies"]["Vehiculo"] = vehicle_body
 
     return pista
 
 def update_physics(dt, ventana):
     world = ventana.program_state["physics_world"]
     world.Step(
-        dt, controller.program_state["vel_iters"], controller.program_state["pos_iters"]
+        dt, ventana.program_state["vel_iters"], ventana.program_state["pos_iters"]
     )
     
     world.ClearForces()
 
 def update_pista(dt, ventana, pista):
     camera = ventana.program_state["camera"]
-    #camera.phi += dt
-    #print(ventana.program_state["bodies"]["vehicle"])
+    
+    # Actualización física del vehiculo
+    vehicle_body = ventana.program_state["bodies"]["Vehiculo"]
+    pista["Vehiculo"]["transform"] = tr.translate(vehicle_body.position[0], 2, vehicle_body.position[1]) @ tr.rotationY(-vehicle_body.angle)
 
+    # Modificar la fuerza y el torque del vehicle con las teclas
+    vehicle_forward = np.array([2000 * np.sin(-vehicle_body.angle + np.pi / 2), 2, 2000 * np.cos(-vehicle_body.angle + np.pi / 2)])
+    
+    if ventana.is_key_pressed(pyglet.window.key.A):
+        vehicle_body.ApplyTorque(-3500, True)
+    
+    if ventana.is_key_pressed(pyglet.window.key.D):
+        vehicle_body.ApplyTorque(3500, True)
+    
+    if ventana.is_key_pressed(pyglet.window.key.W):
+        vehicle_body.ApplyForce((vehicle_forward[0], vehicle_forward[2]), vehicle_body.worldCenter, True)
+    
+    if ventana.is_key_pressed(pyglet.window.key.S):
+        vehicle_body.ApplyForce((-vehicle_forward[0], -vehicle_forward[2]), vehicle_body.worldCenter, True)
+
+    camera.center_offset = [vehicle_body.position[0], 2, vehicle_body.position[1]]
+    camera.focus = [vehicle_body.position[0], 2, vehicle_body.position[1]]
+    camera.phi = vehicle_body.angle + np.pi / 2
+    
     camera.update()
+    update_physics(dt, ventana)
+    #print(vehicle_body.position)
+    print(vehicle_body)
+    #print(vehicle_body.linearDamping)
