@@ -135,19 +135,41 @@ def crear_pista(ventana):
                           shininess = 128
                      ))
 
+    
     pista.add_node("Vehiculo",
                     rotation = [0, np.pi, 0],
                     transform = tr.translate(0, 1.66, 0)
                     )
 
-    pista.add_node("Chasis_1",
-                    attach_to = "Vehiculo",
-                    mesh = Mesh_Chasis,
-                    pipeline = Color_Mesh_Lit_Pipeline,
-                    material = Material_Rubi,
-                    )
+    #######################################################
 
-    pista.add_node("ventanas_1",
+    if ventana.program_state["seleccion"] == 0:
+        pista.add_node("Chasis",
+                        attach_to = "Vehiculo",
+                        mesh = Mesh_Chasis,
+                        pipeline = Color_Mesh_Lit_Pipeline,
+                        material = Material_Rubi,
+                        )
+
+    elif ventana.program_state["seleccion"] == 1:
+        pista.add_node("Chasis",
+                        attach_to = "Vehiculo",
+                        mesh = Mesh_Chasis,
+                        pipeline = Color_Mesh_Lit_Pipeline,
+                        material = Material_Oro_Pulido,
+                        )
+
+    else:
+        pista.add_node("Chasis",
+                        attach_to = "Vehiculo",
+                        mesh = Mesh_Chasis,
+                        pipeline = Color_Mesh_Lit_Pipeline,
+                        material = Material_Esmeralda,
+                        )
+
+    ########################################################
+
+    pista.add_node("ventanas",
                     attach_to = "Vehiculo",
                     mesh = Mesh_Ventanas,
                     pipeline = Color_Mesh_Lit_Pipeline,

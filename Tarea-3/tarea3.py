@@ -38,6 +38,7 @@ class Ventana(pyglet.window.Window):
         self.key_handler = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.key_handler)
         self.program_state = {  "camera": None,
+                                "pista": None,
                                 "scene": 0,
                                 "seleccion": 0, 
                                 "Key_Cool_Down": 0,
@@ -101,7 +102,6 @@ if __name__ == "__main__":
     
 
     garaje = car_select_scene.crear_garaje(ventana)
-    pista = track_scene.crear_pista(ventana)
     axis_scene = init_axis(ventana)
 
     def update(dt):
@@ -114,6 +114,8 @@ if __name__ == "__main__":
             and ventana.program_state["Key_Cool_Down"] >= 0.5 \
             and ventana.program_state["scene"] == 0 \
             and not ventana.program_state["transicion"]:
+            
+            ventana.program_state["pista"] = track_scene.crear_pista(ventana)
             
             ventana.program_state["scene"] = 1
             ventana.program_state["camera"].focus = np.array([0, 0, 0])
@@ -129,7 +131,7 @@ if __name__ == "__main__":
             car_select_scene.update_garaje(dt, ventana, garaje)
         
         else:
-            track_scene.update_pista(dt, ventana, pista)
+            track_scene.update_pista(dt, ventana, ventana.program_state["pista"])
 
         camera = ventana.program_state["camera"]
         #print([camera.phi, camera.angle_offset])
@@ -147,7 +149,7 @@ if __name__ == "__main__":
             garaje.draw()
         
         else:
-            pista.draw()
+            ventana.program_state["pista"].draw()
             axis_scene.draw()
 
     pyglet.clock.schedule_interval(update, 1/60)
