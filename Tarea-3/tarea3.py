@@ -38,17 +38,22 @@ class Ventana(pyglet.window.Window):
         self.key_handler = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.key_handler)
         self.program_state = {  "camera": None,
+                                "current_camera": 0,
+                                
                                 "pista": None,
                                 "scene": 0,
                                 "seleccion": 0, 
+                                
                                 "Key_Cool_Down": 0,
                                 "transicion": False,
+                                
                                 "Offset_Inicial": None,
                                 "Offset_Final": np.array([0, 0, 15], dtype=np.float32),
                                 "Offset_Actual": np.array([0, 0, 15], dtype=np.float32),
                                 "Parametro_Vista_Final": 0,
                                 "Parametro_Vista_Actual": 0,
                                 "Angulo_Final": np.pi,
+                                
                                 "physics_world" : None,
                                 "bodies": {},
                                 #Parametros para el integrador de fuerzas
@@ -68,7 +73,7 @@ class Ventana(pyglet.window.Window):
     def is_key_pressed(self, key):
         return self.key_handler[key]
 
-class Camara_Orbital(Camera):
+class Camara_Orbital_Custom(Camera):
     def __init__(self, distancia, tipo = "perspective", ancho = ANCHO, alto = ALTO, center_offset = np.array([0, 0, 0], dtype=np.float32), angle_offset = np.pi):
         super().__init__(tipo, ancho, alto)
         self.distancia = distancia
@@ -88,12 +93,39 @@ class Camara_Orbital(Camera):
         self.position[1] = self.distancia * np.cos(self.theta) + self.center_offset[1]
         self.position[2] = self.distancia * np.sin(self.theta) * np.cos(-1 * self.phi + self.angle_offset) + self.center_offset[2]
 
+class Camara_Orbital_Custom_Superior(Camera):
+    def __init__(self, distancia, tipo = "perspective", ancho = ANCHO, alto = ALTO, center_offset = np.array([0, 2, 0])):
+        super().__init__(tipo, ancho, alto)
+        self.distancia = distancia
+        self.center_offset = center_offset
+        self.phi = 0
+        self.theta = 0.0001
+        self.update()
+
+    def update(self):
+        if self.theta > np.pi:
+            self.theta = np.pi
+        elif self.theta < 0:
+            self.theta = 0.0001
+
+        self.position[0] = self.distancia * np.sin(self.theta) * np.sin(self.phi)  + self.center_offset[0]
+        self.position[1] = self.distancia * np.cos(self.theta) + self.center_offset[1]
+        self.position[2] = self.distancia * np.sin(self.theta) * np.cos(self.phi) + self.center_offset[2]
+
 if __name__ == "__main__":
 
     ventana = Ventana(ANCHO, ALTO, "Tarea #3")
 
-    #Creamos y configuramos la camara con sus parametros iniciales
-    ventana.program_state["camera"] = Camara_Orbital(7, ancho = ventana.ancho, alto = ventana.alto)
+    print("##################################################################")
+    print("##################################################################")
+    print("##################################################################")
+    print("###### Cambiar seleccion con ESPACIO, y confirmar con ENTER ######")
+    print("##################################################################")
+    print("##################################################################")
+    print("##################################################################")
+
+    #Creamos y configuramos la camara orbital con sus parametros iniciales
+    ventana.program_state["camera"] = Camara_Orbital_Custom(7, ancho = ventana.ancho, alto = ventana.alto)
     ventana.program_state["camera"].theta = np.pi / 2.7
     ventana.program_state["camera"].phi = 0
     
@@ -114,12 +146,23 @@ if __name__ == "__main__":
             and ventana.program_state["Key_Cool_Down"] >= 0.5 \
             and ventana.program_state["scene"] == 0 \
             and not ventana.program_state["transicion"]:
+
+            print("                                                                  ")
+            print("##################################################################")
+            print("##################################################################")
+            print("##################################################################")
+            print("########### Controlar con WASD, y cambiar camara con Q ###########")
+            print("##################################################################")
+            print("##################################################################")
+            print("##################################################################")
+            
+            ventana.program_state["Key_Cool_Down"] = 0
             
             ventana.program_state["pista"] = track_scene.crear_pista(ventana)
             
             ventana.program_state["scene"] = 1
             ventana.program_state["camera"].focus = np.array([0, 0, 0])
-            ventana.program_state["camera"].center_offset = np.array([0, 0, -2])
+            ventana.program_state["camera"].center_offset = np.array([0, 0, 0])
             ventana.program_state["camera"].angle_offset = 0
             ventana.program_state["camera"].phi = np.pi / 2 - 0.225
             ventana.program_state["camera"].theta = np.pi / 3
@@ -131,10 +174,25 @@ if __name__ == "__main__":
             car_select_scene.update_garaje(dt, ventana, garaje)
         
         else:
-            track_scene.update_pista(dt, ventana, ventana.program_state["pista"])
+            if ventana.is_key_pressed(pyglet.window.key.Q) and ventana.program_state["Key_Cool_Down"] >= 0.5:
+                #Cambio de camara
+                if ventana.program_state["current_camera"] == 0:
+                    
+                    ventana.program_state["camera"] = Camara_Orbital_Custom_Superior(45, ancho = ventana.ancho, alto = ventana.alto)
 
-        camera = ventana.program_state["camera"]
-        #print([camera.phi, camera.angle_offset])
+                    ventana.program_state["current_camera"] = 1
+                    ventana.program_state["Key_Cool_Down"] = 0
+
+                else:
+                    ventana.program_state["camera"] = Camara_Orbital_Custom(10, ancho = ventana.ancho, alto = ventana.alto)
+
+                    ventana.program_state["camera"].angle_offset = 0
+                    
+                    ventana.program_state["current_camera"] = 0
+                    ventana.program_state["Key_Cool_Down"] = 0
+
+            
+            track_scene.update_pista(dt, ventana, ventana.program_state["pista"])
 
     @ventana.event
     def on_resize(width, height):
@@ -150,7 +208,7 @@ if __name__ == "__main__":
         
         else:
             ventana.program_state["pista"].draw()
-            axis_scene.draw()
+            #axis_scene.draw()
 
     pyglet.clock.schedule_interval(update, 1/60)
     pyglet.app.run()

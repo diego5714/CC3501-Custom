@@ -79,7 +79,7 @@ Cubo = Model(shapes.Cube["position"], shapes.Cube["uv"], shapes.Cube["normal"], 
 
 Color_Material_Cromo = np.array([np.array([0.25, 0.25, 0.25]), np.array([0.4, 0.4, 0.4]), np.array([0.774597, 0.774597, 0.774597])])
 Color_Material_Goma_Negra = np.array([np.array([0.02, 0.02, 0.02]), np.array([0.01, 0.01, 0.01]), np.array([0.4, 0.4, 0.4])])
-Color_Material_Oro_Pulido = np.array([np.array([0.24725, 0.2245, 0.0645]), np.array([0.34615, 0.3143, 0.0903]), np.array([0.797357, 0.723991, 0.208006])])
+Color_Material_Oro_Pulido = np.array([np.array([0.24725, 0.2245, 0.0645]), np.array([0.77, 0.70, 0.22]), np.array([0.797357, 0.723991, 0.208006])])
 Color_Material_Rubi = np.array([np.array([0.1745, 0.01175, 0.01175]), np.array([0.61424, 0.04136, 0.04136]), np.array([0.727811, 0.626959, 0.626959])])
 Color_Material_Esmeralda = np.array([np.array([0.0215, 0.1745, 0.0215]), np.array([0.07568, 0.61424, 0.07568]), np.array([0.633, 0.727811, 0.633])])
 Color_Material_ventanas = np.array([np.array([0.1, 0.1, 0.1]), np.array([0.016, 0.8, 0.941]), np.array([0.116, 0.9, 1])])
@@ -101,7 +101,7 @@ Material_Plata = Material(Color_Material_Plata[0], Color_Material_Plata[1], Colo
 
 #Texturas:
 
-textura_pista = Texture("Tarea-3/Textures/pista.jpg", maxFilterMode = GL.GL_NEAREST)
+textura_pista = Texture("Tarea-3/Textures/pista.jpg", maxFilterMode = GL.GL_NEAREST) #Textura de la pista.
 
 #Grafo de escena
 
@@ -116,9 +116,9 @@ def crear_pista(ventana):
                 rotation = np.array([-np.pi / 4, 0, 0]),
                 position = np.array([0, 4, 0]),
                 light = DirectionalLight(
-                        ambient = np.array([0.15, 0.15, 0.15]),
+                        ambient = np.array([0.2, 0.2, 0.2]),
                         diffuse = np.array([1, 1, 1]),
-                        specular = np.array([0.25, 0.25, 0.25])
+                        specular = np.array([0.5, 0.5, 0.5])
                         ),
                 )
 
@@ -227,17 +227,32 @@ def crear_pista(ventana):
     world = b2World(gravity=(0, 0))
 
     #Cuerpos dinamicos
-    vehicle_body = world.CreateDynamicBody(position=(0, 0))
-    vehicle_body.CreatePolygonFixture(box=(4, 10), density=1, friction=100)
-    vehicle_body.linearDamping = 1
-    vehicle_body.angularDamping = 1
+    vehicle_body = world.CreateDynamicBody(position=(10, -8.5))
+    vehicle_body.CreatePolygonFixture(box=(4, 2.7), density=2, friction=100)
+    vehicle_body.linearDamping = 1.1
+    vehicle_body.angularDamping = 1.1
     
+    #Objetos estaticos:
+    wall1_body = world.CreateStaticBody(position=(-101, 0))
+    wall1_body.CreatePolygonFixture(box=(0.5, 100), density=1, friction=1)
 
+    wall2_body = world.CreateStaticBody(position=(101, 0))
+    wall2_body.CreatePolygonFixture(box=(0.5, 100), density=1, friction=1)
+
+    wall3_body = world.CreateStaticBody(position=(0, -101))
+    wall3_body.CreatePolygonFixture(box=(100, 0.5), density=1, friction=1)
+
+    wall4_body = world.CreateStaticBody(position=(0, 101))
+    wall4_body.CreatePolygonFixture(box=(100, 0.5), density=1, friction=1)
+    
+    #Objetos dinamicos
     ventana.program_state["physics_world"] = world
     ventana.program_state["bodies"]["Vehiculo"] = vehicle_body
 
     return pista
 
+
+#Funcion de actualizacion de fisicas (Se llama desde el update general)
 def update_physics(dt, ventana):
     world = ventana.program_state["physics_world"]
     world.Step(
@@ -246,21 +261,20 @@ def update_physics(dt, ventana):
     
     world.ClearForces()
 
+#Funcion update especifica para esta escena
 def update_pista(dt, ventana, pista):
-    camera = ventana.program_state["camera"]
-    
     # Actualización física del vehiculo
     vehicle_body = ventana.program_state["bodies"]["Vehiculo"]
     pista["Vehiculo"]["transform"] = tr.translate(vehicle_body.position[0], 2, vehicle_body.position[1]) @ tr.rotationY(-vehicle_body.angle)
 
     # Modificar la fuerza y el torque del vehicle con las teclas
-    vehicle_forward = np.array([2000 * np.sin(-vehicle_body.angle + np.pi / 2), 2, 2000 * np.cos(-vehicle_body.angle + np.pi / 2)])
+    vehicle_forward = np.array([1500 * np.sin(-vehicle_body.angle + np.pi / 2), 2, 1500 * np.cos(-vehicle_body.angle + np.pi / 2)])
     
     if ventana.is_key_pressed(pyglet.window.key.A):
-        vehicle_body.ApplyTorque(-3500, True)
+        vehicle_body.ApplyTorque(-1000, True)
     
     if ventana.is_key_pressed(pyglet.window.key.D):
-        vehicle_body.ApplyTorque(3500, True)
+        vehicle_body.ApplyTorque(1000, True)
     
     if ventana.is_key_pressed(pyglet.window.key.W):
         vehicle_body.ApplyForce((vehicle_forward[0], vehicle_forward[2]), vehicle_body.worldCenter, True)
@@ -268,12 +282,19 @@ def update_pista(dt, ventana, pista):
     if ventana.is_key_pressed(pyglet.window.key.S):
         vehicle_body.ApplyForce((-vehicle_forward[0], -vehicle_forward[2]), vehicle_body.worldCenter, True)
 
-    camera.center_offset = [vehicle_body.position[0], 2, vehicle_body.position[1]]
-    camera.focus = [vehicle_body.position[0], 2, vehicle_body.position[1]]
-    camera.phi = vehicle_body.angle + np.pi / 2
+    #Actualizacion de la camara
+    camera = ventana.program_state["camera"]
+
+    if ventana.program_state["current_camera"] == 0:
+
+        camera.center_offset = [vehicle_body.position[0], 2, vehicle_body.position[1]]
+        camera.focus = [vehicle_body.position[0], 2, vehicle_body.position[1]]
+        camera.phi = vehicle_body.angle + np.pi / 2
+        camera.distance = 10
+
+    else:
+        camera.center_offset = [vehicle_body.position[0], 2, vehicle_body.position[1]]
+        camera.focus = [vehicle_body.position[0], 2, vehicle_body.position[1]]
     
     camera.update()
     update_physics(dt, ventana)
-    #print(vehicle_body.position)
-    print(vehicle_body)
-    #print(vehicle_body.linearDamping)

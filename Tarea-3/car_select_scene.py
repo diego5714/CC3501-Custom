@@ -99,6 +99,7 @@ Material_Plata = Material(Color_Material_Plata[0], Color_Material_Plata[1], Colo
 
 #Grafo de escena
 
+#Funciones auxiliares
 def crear_garaje(ventana):
 
     Garaje = SceneGraph(ventana)
@@ -658,6 +659,8 @@ def Mov_Suave(dt, offset_inicial, offset_final, offset_actual):
 
         return offset_actual
 
+
+#Funcion update especifica a esta escena:
 def update_garaje(dt, ventana, garaje):
     camera = ventana.program_state["camera"]
     Auto_1 = garaje.__getitem__("Vehiculo_1")
@@ -802,5 +805,4 @@ def update_garaje(dt, ventana, garaje):
             ventana.program_state["Parametro_Vista_Actual"] = 0
             camera.phi = 0
     
-    #print(camera.distancia)
     camera.update()

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     Ventana.program_state["camera"].focus = np.array([0, 0, 15])
     
 
-    #Importamos el vehiculo
+    #Importamos el vehiculo y el escenario
 
     Mesh_Cilindro = mesh_from_file_custom("Tarea-2/Models/Cilindro(Radio = 1, Altura = 2, Centrado).stl", escalar = False)[0]["mesh"]
     Mesh_Cuboide = mesh_from_file_custom("Tarea-2/Models/Cuboide(30x16x30).stl", escalar = False)[0]["mesh"]
