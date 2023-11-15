@@ -107,10 +107,12 @@ if __name__ == "__main__":
                     material=Material(),
                     texture=zorzal[i]["texture"],
                     cull_face=False)
+
     graph.add_node("point_light",
                     attach_to="zorzal",
                     pipeline=[color_mesh_lit_pipeline, textured_mesh_lit_pipeline],
-                    light=PointLight(diffuse = [0, 1, 1], specular = [1, 1, 0], ambient = [0.1, 0.1, 0.1]))
+                    light=PointLight(diffuse = [0, 1, 1], specular = [1, 1, 0], ambient = [0.1, 0.1, 0.1])
+                )
     
     graph.add_node("spotlight",
                     pipeline=[color_mesh_lit_pipeline, textured_mesh_lit_pipeline],
